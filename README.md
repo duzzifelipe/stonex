@@ -34,3 +34,11 @@ This project is also a try to learn StoneCo's best practices for git style, pres
 - Authentication for all operations;
 
 - Keep all transactions history on database;
+
+- Documentation for:
+  - Setup;
+  - Modules;
+  - Deployment;
+  - API;
+
+- Code tests.
