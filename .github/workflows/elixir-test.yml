@@ -32,9 +32,11 @@ jobs:
       env:
         MIX_ENV: test
     - name: Check code Format
-      run: |
-        mix format --check-formatted --dry-run
-        mix credo
+      run: mix format --check-formatted --dry-run
+      env:
+        MIX_ENV: test
+    - name: Run code Analysis
+      run: mix credo
       env:
         MIX_ENV: test
     - name: Setup Database
