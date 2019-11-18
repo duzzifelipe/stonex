@@ -30,5 +30,6 @@ stonex-*.tar
 # Ignore vs code folder
 .elixir_ls
 
-# Ignore dev settings
+# Ignore dev and test settings
 config/dev.secret.exs
+config/test.secret.exs
