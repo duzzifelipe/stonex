@@ -28,3 +28,9 @@ This project is also a try to learn StoneCo's best practices for git style, pres
   - It will be considered when money is transfered too (it is good to keep users informed about everything);
 
 - Accounts cannot have negative balance;
+
+### Software requirements
+
+- Authentication for all operations;
+
+- Keep all transactions history on database;
