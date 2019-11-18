@@ -91,3 +91,10 @@ The server can be started on port 4000 by running the command bellow.
 ```
 $ mix phx.server
 ```
+
+To keep code legible, `mix` comes with a built-in formatter. It is used during development and on CI to check if the developer ran it.
+
+```
+$ mix format   # changes the code
+$ mix format --check-formatted --dry-run   # raises error if not formatted
+```
