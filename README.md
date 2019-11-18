@@ -15,3 +15,16 @@ This project is also a try to learn StoneCo's best practices for git style, pres
 - A [Phoenix Framework](https://www.phoenixframework.org/) setup for APIs, without HTML, JS and CSS boilerplates.
 
 - PostgreSQL database;
+
+### Bank Rules
+
+- When an user signs up, he/she will receive R$ 1.000,00;
+
+- The possible actions are:
+  - Withdraw money;
+  - Transfer money
+
+- When money is withdrawn, an email (or just a log) must be sent
+  - It will be considered when money is transfered too (it is good to keep users informed about everything);
+
+- Accounts cannot have negative balance;
