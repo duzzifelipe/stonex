@@ -98,3 +98,9 @@ To keep code legible, `mix` comes with a built-in formatter. It is used during d
 $ mix format   # changes the code
 $ mix format --check-formatted --dry-run   # raises error if not formatted
 ```
+
+Alongside to `mix format`, this project uses [Credo](https://github.com/rrrene/credo) as a static code analysis tool to check code consistency and is also used on CI. Credo can be run by the following command.
+
+```
+$ mix credo
+```
