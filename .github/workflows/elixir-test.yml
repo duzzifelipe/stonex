@@ -35,6 +35,10 @@ jobs:
       run: mix format --check-formatted --dry-run
       env:
         MIX_ENV: test
+    - name: Run code Analysis
+      run: mix credo
+      env:
+        MIX_ENV: test
     - name: Setup Database
       run: |
         mix ecto.create
