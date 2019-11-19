@@ -51,4 +51,6 @@ USER nobody
 
 ENV HOME=/app
 
+EXPOSE 4000
+
 CMD ["/app/bin/stonex", "start"]
