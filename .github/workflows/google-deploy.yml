@@ -12,20 +12,15 @@ jobs:
     - uses: actions/checkout@v1
     - name: Setup Google Cloud SDK
       run: |
-        echo "0"
-        echo "1"
         echo '${{ secrets.GOOGLE_SERVICE_KEY }}' > /tmp/gcloud-service-key.json
-        echo "1.5"
-        cat /tmp/gcloud-service-key.json
-        echo "2"
         gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json
-        echo "3"
         gcloud --quiet config set project personal-231922
-        echo "4"
         gcloud --quiet config set compute/zone us-central1
-        echo "5"
         gcloud auth configure-docker
-        echo "6"
+    - name: Configure Project Secrets
+      run: |
+        cp ./config/sample.secret.exs ./config/dev.secret.exs
+        cp ./config/sample.secret.exs ./config/test.secret.exs
     - name: Build Docker Image
       run: |
         docker build \
