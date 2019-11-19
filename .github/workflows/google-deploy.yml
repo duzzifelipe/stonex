@@ -2,9 +2,57 @@ name: Build and Deploy to GCloud
 on:
   push:
     branches:
-      - master
+      - 'chore/docker-on-github-actions'
 jobs:
-  build:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: elixir:1.9.1-slim
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: github_actor
+          POSTGRES_DB: stonex_test
+          POSTGRES_PASSWORD: "@postgresPwd"
+        ports:
+          - 5432/tcp
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure Project Secrets
+      run: |
+        cp ./config/sample.secret.exs ./config/dev.secret.exs
+        cp ./config/sample.secret.exs ./config/test.secret.exs
+        sed -i 's/"username"/"github_actor"/g' ./config/test.secret.exs
+        sed -i 's/"password"/"@postgresPwd"/g' ./config/test.secret.exs
+        sed -i 's/"database"/"stonex_test"/g' ./config/test.secret.exs
+        sed -i 's/"hostname"/"postgres"/g' ./config/test.secret.exs
+    - name: Install Dependencies
+      run: |
+        mix local.rebar --force
+        mix local.hex --force
+        mix deps.get
+      env:
+        MIX_ENV: test
+    - name: Check code Format
+      run: mix format --check-formatted --dry-run
+      env:
+        MIX_ENV: test
+    - name: Run code Analysis
+      run: mix credo
+      env:
+        MIX_ENV: test
+    - name: Setup Database
+      run: |
+        mix ecto.create
+        mix ecto.migrate
+      env:
+        MIX_ENV: test
+    - name: Run Tests
+      run: mix test
+      env:
+        MIX_ENV: test
+  build_and_deploy:
     runs-on: ubuntu-latest
     container:
       image: google/cloud-sdk
