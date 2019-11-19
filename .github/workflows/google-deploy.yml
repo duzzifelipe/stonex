@@ -2,7 +2,7 @@ name: Build and Deploy to GCloud
 on:
   push:
     branches:
-      - 'chore/docker-on-github-actions'
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
