@@ -1,4 +1,4 @@
-FROM elixir:1.9-alpine as build
+FROM elixir:1.9.1-alpine as build
 
 ARG DATABASE_URL
 ARG SECRET_KEY_BASE
@@ -16,7 +16,16 @@ WORKDIR /app
 COPY mix.exs mix.lock ./
 COPY config config
 
-RUN mix local.hex --force && mix local.rebar --force
+# setting up nameservers for a run is a bad deal because
+# docker ignore it between runs in favor to
+# setting it up on your docker's network. 
+# But since it will be built by a CI
+# and rebar is failing by alpine's default nameservers,
+# setting it here will solve the problem
+RUN echo 'nameserver 8.8.8.8' > /etc/resolv.conf && \
+    echo 'nameserver 8.8.4.4' >> /etc/resolv.conf && \
+    mix local.hex --force && \
+    mix local.rebar --force
 
 RUN mix deps.get --only prod
 RUN mix deps.compile
