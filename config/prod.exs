@@ -11,7 +11,7 @@ use Mix.Config
 # before starting your production server.
 config :stonex, StonexWeb.Endpoint,
   server: true,
-  url: [host: "example.com", port: 80],
+  url: [host: "example.com", port: 80]
 
 # Do not print debug messages in production
 config :logger, level: :info
