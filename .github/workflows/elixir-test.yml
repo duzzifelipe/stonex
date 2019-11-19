@@ -4,7 +4,7 @@ on:
     branches-ignore:
       - master
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     container:
       image: elixir:1.9.1-slim
