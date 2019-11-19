@@ -34,7 +34,6 @@ COPY priv priv
 COPY lib lib
 RUN mix compile
 
-COPY rel rel
 RUN mix release
 
 FROM alpine:3.9 AS app
