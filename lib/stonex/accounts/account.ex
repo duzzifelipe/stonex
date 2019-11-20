@@ -53,4 +53,29 @@ defmodule Stonex.Accounts.Account do
     |> validate_required([:agency, :number, :user_id, :balance])
     |> foreign_key_constraint(:user_id)
   end
+
+  @doc """
+  Verifies if an account has sufficient
+  balance to allow debiting a value
+
+  ## Examples
+
+      iex> Stonex.Accounts.Account.can_debit?(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   999
+      ...> )
+      true
+
+      iex> Stonex.Accounts.Account.can_debit?(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   1001
+      ...> )
+      false
+  """
+  @spec can_debit?(Stonex.Accounts.Account.t(), number) :: boolean
+  def can_debit?(%__MODULE__{} = account, debit_value) when is_integer(debit_value) and debit_value > 0 do
+    account.balance >= debit_value
+  end
+
+  def can_debit?(_, _), do: false
 end
