@@ -17,8 +17,10 @@ defmodule Stonex.Users.User do
     field(:email, :string, null: false)
     field(:encrypted_password, :string, null: false)
 
-    field :password, :string, virtual: true
-    field :password_confirmation, :string, virtual: true
+    field(:password, :string, virtual: true)
+    field(:password_confirmation, :string, virtual: true)
+
+    has_many(:accounts, Stonex.Accounts.Account)
 
     timestamps()
   end
