@@ -56,6 +56,46 @@ defmodule Stonex.Accounts.Repository do
     |> Repo.insert()
   end
 
+  @doc """
+  Receives an account struct where amount
+  will be debited.
+
+  Amount is represented by an integer using
+  two digits as decimal places
+
+  ## Examples
+
+      iex> {:ok, created_user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account} = Stonex.Accounts.Repository.create_account(
+      ...>   created_user,
+      ...>   1
+      ...> )
+      ...> {:ok, account} = Stonex.Accounts.Repository.withdraw_money(
+      ...>   account,
+      ...>   200
+      ...> )
+      ...> account.balance
+      99800
+  """
+  @spec withdraw_money(Stonex.Accounts.Account.t(), integer) ::
+          {:ok, Stonex.Accounts.Account.t()} | {:error, any}
+  def withdraw_money(%Account{} = account, amount) do
+    changeset = Account.update_balance_changeset(account, :debit, amount)
+
+    if changeset.valid? do
+      Repo.update(changeset)
+    else
+      {:error, changeset.errors}
+    end
+  end
+
   defp get_next_account_number(agency) do
     last_account = get_one_account_by_digit(agency)
 
