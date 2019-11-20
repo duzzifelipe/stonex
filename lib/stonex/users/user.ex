@@ -1,4 +1,4 @@
-defmodule Stonex.User do
+defmodule Stonex.Users.User do
   @moduledoc """
   This module holds the database structure
   and logic for bank users (clients).

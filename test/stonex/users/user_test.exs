@@ -1,7 +1,7 @@
 defmodule Stonex.UserTest do
   use Stonex.DataCase
 
-  alias Stonex.User
+  alias Stonex.Users.User
 
   describe "users" do
     @pwd Faker.String.base64(8)
