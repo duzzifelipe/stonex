@@ -51,5 +51,37 @@ defmodule Stonex.Users.RepositoryTest do
       error = Keyword.fetch!(changeset.errors, :registration_id)
       assert elem(error, 0) == "has already been taken"
     end
+
+    test "login/2 with valid attributes" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+      assert {:ok, user} = Repository.login(registered_user.email, @pwd)
+
+      assert user.id == registered_user.id
+      assert user.registration_id == registered_user.registration_id
+    end
+
+    test "login/2 with invalid password" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+
+      assert {:error, "invalid user and password"} =
+               Repository.login(registered_user.email, Faker.String.base64(6))
+    end
+
+    test "login/2 with nil password" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+
+      assert {:error, "invalid user and password"} = Repository.login(registered_user.email, nil)
+    end
+
+    test "login/2 with nil email" do
+      assert {:error, "invalid user and password"} = Repository.login(nil, @pwd)
+    end
+
+    test "login/2 with nonexistent email" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+
+      assert {:error, "invalid user and password"} =
+               Repository.login(Faker.Internet.email(), @pwd)
+    end
   end
 end
