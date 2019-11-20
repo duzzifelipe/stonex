@@ -55,27 +55,63 @@ defmodule Stonex.Accounts.Account do
   end
 
   @doc """
-  Verifies if an account has sufficient
-  balance to allow debiting a value
+  Receives an account struct and an amount
+  value to be DEBITED from the account
 
-  ## Examples
-
-      iex> Stonex.Accounts.Account.can_debit?(
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
       ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :debit,
       ...>   999
       ...> )
+      ...> changeset.valid?
       true
 
-      iex> Stonex.Accounts.Account.can_debit?(
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
       ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :debit,
       ...>   1001
       ...> )
+      ...> changeset.valid?
       false
   """
-  @spec can_debit?(Stonex.Accounts.Account.t(), number) :: boolean
-  def can_debit?(%__MODULE__{} = account, debit_value) when is_integer(debit_value) and debit_value > 0 do
-    account.balance >= debit_value
+  def update_balance_changeset(%__MODULE__{} = account, :debit, amount) do
+    changeset = cast(account, %{}, [])
+
+    if valid_transaction_amount?(amount) && account.balance >= amount do
+      update_balance_changeset(changeset, account.balance - amount)
+    else
+      add_error(changeset, :balance, "provided value is not valid")
+    end
   end
 
-  def can_debit?(_, _), do: false
+  @doc """
+  Receives an account struct and an amount
+  value to be CREDITED from the account
+
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :credit,
+      ...>   999
+      ...> )
+      ...> changeset.valid?
+      true
+  """
+  def update_balance_changeset(%__MODULE__{} = account, :credit, amount) do
+    changeset = cast(account, %{}, [])
+
+    if valid_transaction_amount?(amount) do
+      update_balance_changeset(changeset, account.balance + amount)
+    else
+      add_error(changeset, :balance, "provided value is not valid")
+    end
+  end
+
+  defp valid_transaction_amount?(value) when is_integer(value) and value > 0, do: true
+
+
+  defp valid_transaction_amount?(_), do: false
+
+  defp update_balance_changeset(changeset, new_balance) do
+    put_change(changeset, :balance, new_balance)
+  end
 end
