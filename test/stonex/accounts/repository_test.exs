@@ -95,5 +95,80 @@ defmodule Stonex.Accounts.RepositoryTest do
         Accounts.Repository.withdraw_money(new_account, 90_000)
       end)
     end
+
+    test "transfer_money/3 with valid parameters" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+
+      assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      assert {:ok, {new_1, new_2}} =
+               Accounts.Repository.transfer_money(account_1, account_2, 90_000)
+
+      assert new_1.balance == 10_000
+      assert new_2.balance == 190_000
+    end
+
+    test "transfer_money/3 with not enough money on debit account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+
+      assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      assert {:error, {chnst_1, chnst_2}} =
+               Accounts.Repository.transfer_money(account_1, account_2, 120_000)
+
+      assert chnst_1 == [balance: {"provided value is not valid", []}]
+      assert chnst_2 == []
+    end
+
+    test "transfer_money/3 with invalid amount" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+
+      assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      assert {:error, {chnst_1, chnst_2}} =
+               Accounts.Repository.transfer_money(account_1, account_2, -20_000)
+
+      assert chnst_1 == [balance: {"provided value is not valid", []}]
+      assert chnst_2 == [balance: {"provided value is not valid", []}]
+    end
+
+    test "transfer_money/3 with nonexistent debit account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+
+      assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      # remove debit account
+      Repo.delete(account_1)
+
+      assert_raise(Ecto.StaleEntryError, fn ->
+        Accounts.Repository.transfer_money(account_1, account_2, 90_000)
+      end)
+
+      # check account 2 balance
+      new_2 = Repo.get!(Accounts.Account, account_2.id)
+      assert new_2.balance == 100_000
+    end
+
+    test "transfer_money/3 with nonexistent credit account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+
+      assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      # remove credit account
+      Repo.delete(account_2)
+
+      assert_raise(Ecto.StaleEntryError, fn ->
+        Accounts.Repository.transfer_money(account_1, account_2, 90_000)
+      end)
+
+      # check account 1 balance
+      new_1 = Repo.get!(Accounts.Account, account_1.id)
+      assert new_1.balance == 100_000
+    end
   end
 end
