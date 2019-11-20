@@ -17,4 +17,8 @@ config :stonex, StonexWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
+# Create weak passwords for testing
+# to minimize compute work needed
+config :bcrypt_elixir, :log_rounds, 1
+
 import_config "test.secret.exs"

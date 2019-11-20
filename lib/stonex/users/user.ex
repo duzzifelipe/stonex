@@ -1,4 +1,4 @@
-defmodule Stonex.User do
+defmodule Stonex.Users.User do
   @moduledoc """
   This module holds the database structure
   and logic for bank users (clients).
@@ -49,6 +49,13 @@ defmodule Stonex.User do
     |> hash_password()
     |> unique_constraint(:email)
     |> unique_constraint(:registration_id)
+  end
+
+  def password_valid?(%__MODULE__{} = user, password) do
+    case Bcrypt.check_pass(user, password) do
+      {:ok, _user} -> true
+      {:error, _message} -> false
+    end
   end
 
   defp hash_password(%{valid?: false} = changeset), do: changeset
