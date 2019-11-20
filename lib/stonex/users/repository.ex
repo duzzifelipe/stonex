@@ -48,4 +48,55 @@ defmodule Stonex.Users.Repository do
     |> User.signup_changeset(attrs)
     |> Repo.insert()
   end
+
+  @doc """
+  Receives an email and raw password as arguments
+  and searches on database for an user with that email.
+
+  If an user is returned, check if raw password given
+  matches encryption for the stored password.
+
+  ## Examples
+    iex> {:error, msg} = Stonex.Users.Repository.login(
+    ...>   "duzzifelipe@gmail.com",
+    ...>   "sT0n3TEST"
+    ...> )
+    ...> msg
+    "invalid user and password"
+
+    iex> {:ok, created_user} = Stonex.Users.Repository.signup(%{
+    ...>   email: "duzzifelipe@gmail.com",
+    ...>   first_name: "Felipe",
+    ...>   last_name: "Duzzi",
+    ...>   password: "sT0n3TEST",
+    ...>   password_confirmation: "sT0n3TEST",
+    ...>   registration_id: "397.257.568.86"
+    ...> })
+    ...> {:ok, user} = Stonex.Users.Repository.login(
+    ...>   "duzzifelipe@gmail.com",
+    ...>   "sT0n3TEST"
+    ...> )
+    ...> assert created_user.id == user.id
+    true
+  """
+  @spec login(String.t(), String.t()) :: {:ok, User} | {:error, String.t()}
+  def login(email, password) when is_binary(email) and is_binary(password) do
+    with %User{} = user <- find_user_by_email(email),
+         true <- User.password_valid?(user, password) do
+      {:ok, user}
+    else
+      _ ->
+        {:error, "invalid user and password"}
+    end
+  end
+
+  def login(_, _) do
+    {:error, "invalid user and password"}
+  end
+
+  @spec find_user_by_email(String.t()) :: %User{} | nil
+  defp find_user_by_email(email) do
+    from(u in User, where: u.email == ^email)
+    |> Repo.one()
+  end
 end
