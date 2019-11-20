@@ -46,7 +46,19 @@ defmodule Stonex.User do
     |> validate_format(:email, ~r/@/)
     |> validate_length(:password, min: 6)
     |> validate_confirmation(:password)
+    |> hash_password()
     |> unique_constraint(:email)
     |> unique_constraint(:registration_id)
+  end
+
+  defp hash_password(%{valid?: false} = changeset), do: changeset
+
+  defp hash_password(%{valid?: true} = changeset) do
+    encrypted_password =
+      changeset
+      |> get_change(:password)
+      |> Bcrypt.hash_pwd_salt()
+
+    put_change(changeset, :encrypted_password, encrypted_password)
   end
 end
