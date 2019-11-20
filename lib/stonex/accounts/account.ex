@@ -108,7 +108,6 @@ defmodule Stonex.Accounts.Account do
 
   defp valid_transaction_amount?(value) when is_integer(value) and value > 0, do: true
 
-
   defp valid_transaction_amount?(_), do: false
 
   defp update_balance_changeset(changeset, new_balance) do
