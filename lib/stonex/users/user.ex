@@ -46,5 +46,7 @@ defmodule Stonex.User do
     |> validate_format(:email, ~r/@/)
     |> validate_length(:password, min: 6)
     |> validate_confirmation(:password)
+    |> unique_constraint(:email)
+    |> unique_constraint(:registration_id)
   end
 end
