@@ -11,7 +11,7 @@ defmodule Stonex.UserTest do
     @valid_parameters %{
       first_name: Faker.Name.first_name(),
       last_name: Faker.Name.last_name(),
-      registration_id: Faker.Code.issn(),
+      registration_id: to_string(CPF.generate()),
       email: Faker.Internet.email(),
       password: @pwd,
       password_confirmation: @pwd
