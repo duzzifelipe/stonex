@@ -22,4 +22,26 @@ defmodule Stonex.User do
 
     timestamps()
   end
+
+  def signup_changeset(%__MODULE__{} = user, attrs) do
+    user
+    |> cast(
+      attrs,
+      [
+        :first_name,
+        :last_name,
+        :registration_id,
+        :email,
+        :password,
+        :password_confirmation
+      ]
+    )
+    |> validate_required([
+      :first_name,
+      :registration_id,
+      :email,
+      :password,
+      :password_confirmation
+    ])
+  end
 end
