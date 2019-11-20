@@ -114,9 +114,9 @@ defmodule Stonex.Users.User do
   defp format_registration_id(%{valid?: false} = changeset, _), do: changeset
 
   defp format_registration_id(%{valid?: true} = changeset, field) do
-    if input = Ecto.Changeset.get_change(changeset, field) do
+    if input = get_change(changeset, field) do
       string_id = input |> CPF.parse!() |> to_string()
-      Ecto.Changeset.put_change(changeset, field, string_id)
+      put_change(changeset, field, string_id)
     else
       changeset
     end

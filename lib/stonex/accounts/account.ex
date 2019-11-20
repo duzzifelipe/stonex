@@ -53,4 +53,64 @@ defmodule Stonex.Accounts.Account do
     |> validate_required([:agency, :number, :user_id, :balance])
     |> foreign_key_constraint(:user_id)
   end
+
+  @doc """
+  Receives an account struct and an amount
+  value to be DEBITED from the account
+
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :debit,
+      ...>   999
+      ...> )
+      ...> changeset.valid?
+      true
+
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :debit,
+      ...>   1001
+      ...> )
+      ...> changeset.valid?
+      false
+  """
+  def update_balance_changeset(%__MODULE__{} = account, :debit, amount) do
+    changeset = cast(account, %{}, [])
+
+    if valid_transaction_amount?(amount) && account.balance >= amount do
+      update_balance_changeset(changeset, account.balance - amount)
+    else
+      add_error(changeset, :balance, "provided value is not valid")
+    end
+  end
+
+  @doc """
+  Receives an account struct and an amount
+  value to be CREDITED from the account
+
+      iex> changeset = Stonex.Accounts.Account.update_balance_changeset(
+      ...>   %Stonex.Accounts.Account{balance: 1000},
+      ...>   :credit,
+      ...>   999
+      ...> )
+      ...> changeset.valid?
+      true
+  """
+  def update_balance_changeset(%__MODULE__{} = account, :credit, amount) do
+    changeset = cast(account, %{}, [])
+
+    if valid_transaction_amount?(amount) do
+      update_balance_changeset(changeset, account.balance + amount)
+    else
+      add_error(changeset, :balance, "provided value is not valid")
+    end
+  end
+
+  defp valid_transaction_amount?(value) when is_integer(value) and value > 0, do: true
+
+  defp valid_transaction_amount?(_), do: false
+
+  defp update_balance_changeset(changeset, new_balance) do
+    put_change(changeset, :balance, new_balance)
+  end
 end
