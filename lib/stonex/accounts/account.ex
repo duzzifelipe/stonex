@@ -14,6 +14,8 @@ defmodule Stonex.Accounts.Account do
   This requires users to provide correct values.
   """
 
+  alias Stonex.Users.User
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -25,5 +27,16 @@ defmodule Stonex.Accounts.Account do
     belongs_to(:user, User)
 
     timestamps()
+  end
+
+  @doc """
+  Receives a map containing number and account
+  digits alongside an user_id.
+  """
+  def create_changeset(%__MODULE__{} = account, attrs) do
+    account
+    |> cast(attrs, [:agency, :number, :user_id, :balance])
+    |> validate_required([:agency, :number, :user_id, :balance])
+    |> foreign_key_constraint(:user_id)
   end
 end
