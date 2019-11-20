@@ -18,6 +18,9 @@ defmodule Stonex.UserTest do
     test "signup_changeset/2 with valid parameters" do
       changeset = User.signup_changeset(%User{}, @valid_parameters)
       assert changeset.valid?
+
+      assert {:ok, changes} = Bcrypt.check_pass(changeset.changes, @pwd)
+      assert changes == changeset.changes
     end
 
     test "signup_changeset/2 with no arguments" do
