@@ -66,5 +66,34 @@ defmodule Stonex.Accounts.RepositoryTest do
       error = Keyword.fetch!(changeset.errors, :user_id)
       assert elem(error, 0) == "does not exist"
     end
+
+    test "withdraw_money/2 with valid parameters" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      assert {:ok, account_updated} = Accounts.Repository.withdraw_money(account, 90_000)
+      assert account_updated.balance == 10_000
+    end
+
+    test "withdraw_money/2 with not enough money" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      assert {:error, errors} = Accounts.Repository.withdraw_money(account, 200_000)
+      assert Keyword.keys(errors) == [:balance]
+      error = Keyword.fetch!(errors, :balance)
+      assert elem(error, 0) == "provided value is not valid"
+    end
+
+    test "withdraw_money/2 with nonexistent account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      new_account = %{account | id: account.id + 1}
+
+      assert_raise(Ecto.StaleEntryError, fn ->
+        Accounts.Repository.withdraw_money(new_account, 90_000)
+      end)
+    end
   end
 end
