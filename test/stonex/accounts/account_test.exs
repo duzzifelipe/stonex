@@ -58,24 +58,45 @@ defmodule Stonex.AccountTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "can_debit?/2 with enough money" do
-      assert Account.can_debit?(%Account{balance: 1_000}, 1_000)
+    test "update_balance_changeset/3 :debit with enough money" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 1_000)
+      assert changeset.valid?
+      assert changeset.changes.balance == 0
+
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 600)
+      assert changeset.valid?
+      assert changeset.changes.balance == 400
     end
 
-    test "can_debit?/2 with not enough money" do
-      assert !Account.can_debit?(%Account{balance: 1_000}, 1_500)
+    test "update_balance_changeset/3 :debit with not enough money" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 1_500)
+      assert !changeset.valid?
     end
 
-    test "can_debit?/2 with not a number" do
-      assert !Account.can_debit?(%Account{balance: 1_000}, nil)
+    test "update_balance_changeset/3 :debit with not a number" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, nil)
+      assert !changeset.valid?
     end
 
-    test "can_debit?/2 with negative number" do
-      assert !Account.can_debit?(%Account{balance: 1_000}, -900)
+    test "update_balance_changeset/3 :debit with negative number" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, -900)
+      assert !changeset.valid?
     end
 
-    test "can_debit?/2 with zero" do
-      assert !Account.can_debit?(%Account{balance: 1_000}, 0)
+    test "update_balance_changeset/3 :debit with zero" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 0)
+      assert !changeset.valid?
+    end
+
+    test "update_balance_changeset/3 :credit with not a number" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :credit, "abcd")
+      assert !changeset.valid?
+    end
+
+    test "update_balance_changeset/3 :credit with valid data" do
+      changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :credit, 1_200)
+      assert changeset.valid?
+      assert changeset.changes.balance == 2_200
     end
   end
 end
