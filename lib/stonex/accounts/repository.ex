@@ -96,6 +96,56 @@ defmodule Stonex.Accounts.Repository do
     end
   end
 
+  @doc """
+  Receives two accounts and an amount to be sent
+  from first account to the second account.
+
+  Amount is represented by an integer using
+  two digits as decimal places
+
+  ## Examples
+
+      iex> {:ok, created_user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account_1} = Stonex.Accounts.Repository.create_account(
+      ...>   created_user,
+      ...>   1
+      ...> )
+      ...> {:ok, account_2} = Stonex.Accounts.Repository.create_account(
+      ...>   created_user,
+      ...>   1
+      ...> )
+      ...> {:ok, {new_1, new_2}} = Stonex.Accounts.Repository.transfer_money(
+      ...>   account_1,
+      ...>   account_2,
+      ...>   200
+      ...> )
+      ...> [new_1.balance, new_2.balance]
+      [99800, 100200]
+  """
+  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) :: any
+  def transfer_money(%Account{} = account_debit, %Account{} = account_credit, amount) do
+    changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
+    changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
+
+    if changeset_debit.valid? && changeset_credit.valid? do
+      Repo.transaction(fn ->
+        new_debit = Repo.update!(changeset_debit)
+        new_credit = Repo.update!(changeset_credit)
+
+        {new_debit, new_credit}
+      end)
+    else
+      {:error, {changeset_debit.errors, changeset_credit.errors}}
+    end
+  end
+
   defp get_next_account_number(agency) do
     last_account = get_one_account_by_digit(agency)
 
