@@ -7,7 +7,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
 ENV POOL_SIZE=${POOL_SIZE}
 ENV MIX_ENV=prod
-ENV PORT=4000
+ENV PORT=80
 
 RUN apk add --update git build-base
 
@@ -45,9 +45,6 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY --from=build /app/_build/prod/rel/stonex /app
-RUN chown -R nobody: /app
-RUN ls
-USER nobody
 
 ENV HOME=/app
 
