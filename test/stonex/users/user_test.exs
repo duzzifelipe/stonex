@@ -3,6 +3,8 @@ defmodule Stonex.UserTest do
 
   alias Stonex.Users.User
 
+  doctest Stonex.Users.User
+
   describe "users" do
     @pwd Faker.String.base64(8)
 
