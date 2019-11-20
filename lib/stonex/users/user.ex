@@ -51,6 +51,13 @@ defmodule Stonex.User do
     |> unique_constraint(:registration_id)
   end
 
+  def password_valid?(%__MODULE__{} = user, password) do
+    case Bcrypt.check_pass(user, password) do
+      {:ok, _user} -> true
+      {:error, _message} -> false
+    end
+  end
+
   defp hash_password(%{valid?: false} = changeset), do: changeset
 
   defp hash_password(%{valid?: true} = changeset) do
