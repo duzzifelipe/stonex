@@ -20,7 +20,7 @@ defmodule Stonex.Users.Repository do
     ...>   last_name: "Duzzi",
     ...>   password: "sT0n3TEST",
     ...>   password_confirmation: "sT0n3TEST",
-    ...>   registration_id: "397.257.568.86"
+    ...>   registration_id: "397.257.568-86"
     ...> })
     ...> :ok
     :ok
@@ -30,7 +30,7 @@ defmodule Stonex.Users.Repository do
     ...>   first_name: "Felipe",
     ...>   password: "sT0n3TEST",
     ...>   password_confirmation: "sT0n3TEST",
-    ...>   registration_id: "397.257.568.86"
+    ...>   registration_id: "397.257.568-86"
     ...> })
     ...> :ok
     :ok
@@ -70,7 +70,7 @@ defmodule Stonex.Users.Repository do
     ...>   last_name: "Duzzi",
     ...>   password: "sT0n3TEST",
     ...>   password_confirmation: "sT0n3TEST",
-    ...>   registration_id: "397.257.568.86"
+    ...>   registration_id: "397.257.568-86"
     ...> })
     ...> {:ok, user} = Stonex.Users.Repository.login(
     ...>   "duzzifelipe@gmail.com",

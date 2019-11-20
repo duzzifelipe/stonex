@@ -63,9 +63,11 @@ defmodule Stonex.Users.User do
     |> validate_format(:email, ~r/@/)
     |> validate_length(:password, min: 6)
     |> validate_confirmation(:password)
-    |> hash_password()
+    |> CPF.Ecto.Changeset.validate_cpf(:registration_id)
+    |> format_registration_id(:registration_id)
     |> unique_constraint(:email)
     |> unique_constraint(:registration_id)
+    |> hash_password()
   end
 
   @doc """
@@ -105,5 +107,16 @@ defmodule Stonex.Users.User do
       |> Bcrypt.hash_pwd_salt()
 
     put_change(changeset, :encrypted_password, encrypted_password)
+  end
+
+  defp format_registration_id(%{valid?: false} = changeset, _), do: changeset
+
+  defp format_registration_id(%{valid?: true} = changeset, field) do
+    if input = Ecto.Changeset.get_change(changeset, field) do
+      string_id = input |> CPF.parse!() |> to_string()
+      Ecto.Changeset.put_change(changeset, field, string_id)
+    else
+      changeset
+    end
   end
 end

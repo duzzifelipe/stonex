@@ -10,7 +10,7 @@ defmodule Stonex.Users.RepositoryTest do
     @valid_parameters %{
       first_name: Faker.Name.first_name(),
       last_name: Faker.Name.last_name(),
-      registration_id: Faker.Code.issn(),
+      registration_id: to_string(CPF.generate()),
       email: Faker.Internet.email(),
       password: @pwd,
       password_confirmation: @pwd
@@ -29,7 +29,9 @@ defmodule Stonex.Users.RepositoryTest do
     test "signup/1 with duplicated email" do
       assert {:ok, user} = Repository.signup(@valid_parameters)
 
-      repeated_email_attrs = Map.put(@valid_parameters, :registration_id, Faker.Code.issn())
+      repeated_email_attrs =
+        Map.put(@valid_parameters, :registration_id, to_string(CPF.generate()))
+
       assert {:error, changeset} = Repository.signup(repeated_email_attrs)
 
       assert !changeset.valid?
