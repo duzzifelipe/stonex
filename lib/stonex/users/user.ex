@@ -43,5 +43,6 @@ defmodule Stonex.User do
       :password,
       :password_confirmation
     ])
+    |> validate_format(:email, ~r/@/)
   end
 end
