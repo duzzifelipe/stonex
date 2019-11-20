@@ -3,6 +3,8 @@ defmodule Stonex.AccountTest do
 
   alias Stonex.Accounts.Account
 
+  doctest Stonex.Accounts.Account
+
   describe "accounts" do
     @valid_parameters %{
       user_id: Faker.Util.pick(0..100),

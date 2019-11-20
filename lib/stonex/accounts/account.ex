@@ -32,6 +32,20 @@ defmodule Stonex.Accounts.Account do
   @doc """
   Receives a map containing number and account
   digits alongside an user_id.
+
+  ## Examples
+
+      iex> changeset = Stonex.Accounts.Account.create_changeset(
+      ...>   %Stonex.Accounts.Account{},
+      ...>   %{
+      ...>      user_id: 1,
+      ...>      agency: 1,
+      ...>      number: 321,
+      ...>      balance: 200000
+      ...>   }
+      ...> )
+      ...> changeset.valid?
+      true
   """
   def create_changeset(%__MODULE__{} = account, attrs) do
     account
