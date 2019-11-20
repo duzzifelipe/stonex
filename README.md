@@ -104,3 +104,20 @@ Alongside to `mix format`, this project uses [Credo](https://github.com/rrrene/c
 ```
 $ mix credo
 ```
+
+### Testing and Building on Github Actions
+
+Recently Github released a new service to run workflows on their cloud called [Github Actions](https://github.com/features/actions). This service works like CircleCI and other well known services.
+
+It was the choice for this project because is a new option and I'm very curious about it.
+
+There are two workflows configured:
+ - one for testing, linting and checking code after each commit on all branches except master;
+ - and another one for testing, linting, checking code, building docker image and deploy to google cloud container registry, only for master.
+
+After writing the workflows and running a lot of times, here are the conclusions:
+ - It is integrated with Github out of the box, showing status for PRs and commits;
+ - It allows you to use plugins that simplifies your workflow (ex: google cloud client);
+ - The free plan gives 2000 minutes;
+ - It has plans for building on MacOS too;
+ - The negative point found during the development is that if you want to reuse steps across your workflows, it requires some node js code and not only referencing something in yml.
