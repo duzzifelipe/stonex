@@ -79,7 +79,7 @@ defmodule Stonex.Users.Repository do
     ...> assert created_user.id == user.id
     true
   """
-  @spec login(String.t(), String.t()) :: {:ok, User} | {:error, String.t()}
+  @spec login(String.t(), String.t()) :: {:ok, User.t()} | {:error, String.t()}
   def login(email, password) when is_binary(email) and is_binary(password) do
     with %User{} = user <- find_user_by_email(email),
          true <- User.password_valid?(user, password) do
@@ -94,7 +94,7 @@ defmodule Stonex.Users.Repository do
     {:error, "invalid user and password"}
   end
 
-  @spec find_user_by_email(String.t()) :: %User{} | nil
+  @spec find_user_by_email(String.t()) :: User.t() | nil
   defp find_user_by_email(email) do
     from(u in User, where: u.email == ^email)
     |> Repo.one()
