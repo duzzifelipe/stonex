@@ -57,5 +57,25 @@ defmodule Stonex.AccountTest do
       error = Keyword.fetch!(changeset.errors, :balance)
       assert elem(error, 0) == "can't be blank"
     end
+
+    test "can_debit?/2 with enough money" do
+      assert Account.can_debit?(%Account{balance: 1_000}, 1_000)
+    end
+
+    test "can_debit?/2 with not enough money" do
+      assert !Account.can_debit?(%Account{balance: 1_000}, 1_500)
+    end
+
+    test "can_debit?/2 with not a number" do
+      assert !Account.can_debit?(%Account{balance: 1_000}, nil)
+    end
+
+    test "can_debit?/2 with negative number" do
+      assert !Account.can_debit?(%Account{balance: 1_000}, -900)
+    end
+
+    test "can_debit?/2 with zero" do
+      assert !Account.can_debit?(%Account{balance: 1_000}, 0)
+    end
   end
 end
