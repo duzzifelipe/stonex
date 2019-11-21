@@ -15,6 +15,7 @@ defmodule Stonex.Accounts.Account do
   """
 
   alias Stonex.Users.User
+  alias Stonex.Accounts.AccountHistory
 
   use Ecto.Schema
   import Ecto.Changeset
@@ -25,6 +26,7 @@ defmodule Stonex.Accounts.Account do
     field(:balance, :integer, null: false)
 
     belongs_to(:user, User)
+    has_many(:other, AccountHistory, on_delete: :delete_all)
 
     timestamps()
   end
