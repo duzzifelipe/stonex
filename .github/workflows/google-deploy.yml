@@ -79,11 +79,7 @@ jobs:
         -t gcr.io/personal-231922/stonex/app:latest .
     - name: Deploy Image to Google Cloud
       run: docker push gcr.io/personal-231922/stonex/app:latest
-    - name: Rotate Google Instances
+    - name: Update instance Image
       run: |
-        gcloud beta compute instance-groups managed rolling-action replace \
-        stonex-group \
-        --min-ready=10s \
-        --max-surge=0 \
-        --region=us-central1 \
-        --project=personal-231922
+        gcloud compute instances update-container stonex \
+        --container-image gcr.io/personal-231922/stonex/app:latest
