@@ -44,7 +44,7 @@ defmodule Stonex.Accounts.AccountHistory do
       ...> changeset.valid?
       false
   """
-  @spec create_changeset(Stonex.Accounts.AccountHistory.t(), map) :: Ecto.Changeset.t()
+  @spec create_changeset(Stonex.Accounts.AccountHistory.t(), map()) :: Ecto.Changeset.t()
   def create_changeset(%__MODULE__{} = account_history, attrs) do
     account_history
     |> cast(attrs, [:type, :amount, :account_id])
