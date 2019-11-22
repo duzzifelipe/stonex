@@ -170,5 +170,36 @@ defmodule Stonex.Accounts.RepositoryTest do
       new_1 = Repo.get!(Accounts.Account, account_1.id)
       assert new_1.balance == 100_000
     end
+
+    test "list_account_history/2 :all" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      assert {:ok, account_updated} = Accounts.Repository.withdraw_money(account, 60_000)
+      assert {:error, _} = Accounts.Repository.withdraw_money(account_updated, 41_000)
+
+      transactions = Accounts.Repository.list_account_history(account, :all)
+
+      assert Enum.count(transactions) == 2
+
+      transaction_1 = Enum.at(transactions, 0)
+      assert transaction_1.account_id == account.id
+      assert transaction_1.type == "credit"
+      assert transaction_1.amount == 100_000
+
+      transaction_2 = Enum.at(transactions, 1)
+      assert transaction_2.account_id == account.id
+      assert transaction_2.type == "debit"
+      assert transaction_2.amount == 60_000
+    end
+
+    test "list_account_history/2 invalid filter" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      assert_raise(FunctionClauseError, fn ->
+        Accounts.Repository.list_account_history(account, "any")
+      end)
+    end
   end
 end
