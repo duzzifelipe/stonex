@@ -14,6 +14,8 @@ defmodule Stonex.Accounts.Repository do
   # default account balance on creation is 1.000,00
   @default_balance 100_000
 
+  @one_day_seconds 60 * 60 * 24
+
   @doc """
   Receives an user instance and an agency number
   and create a new account for it.
@@ -203,7 +205,9 @@ defmodule Stonex.Accounts.Repository do
       when type == :year or type == :month or type == :day do
     min_date = build_min_date(type)
 
-    from(h in account_history_query(account_id), where: h.inserted_at > ^min_date)
+    from(h in account_history_query(account_id),
+      where: h.inserted_at > ^min_date
+    )
     |> Repo.all()
   end
 
@@ -236,8 +240,8 @@ defmodule Stonex.Accounts.Repository do
   defp build_min_date(type) do
     subtractor = build_min_date_subtractor(type)
 
-    Date.utc_today()
-    |> Date.add(-subtractor)
+    %{NaiveDateTime.utc_now() | microsecond: {0, 0}, second: 59, minute: 59, hour: 23}
+    |> NaiveDateTime.add(-1 * @one_day_seconds * subtractor)
   end
 
   defp build_min_date_subtractor(type) do
