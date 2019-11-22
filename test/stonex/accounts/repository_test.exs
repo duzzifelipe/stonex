@@ -5,6 +5,8 @@ defmodule Stonex.Accounts.RepositoryTest do
 
   doctest Stonex.Accounts.Repository
 
+  import Mock
+
   describe "accounts repository create_account/2" do
     @pwd Faker.String.base64(8)
 
@@ -235,6 +237,65 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert transaction_2.account_id == account.id
       assert transaction_2.type == "debit"
       assert transaction_2.amount == 60_000
+    end
+
+    test ":day" do
+      today = NaiveDateTime.utc_now()
+      one_day_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      # this is a little bit strange:
+      # since account was created without mock (today)
+      # the transaction is made with mock (two days ago)
+      # but since there is no validation for it
+      # it helps testing the list_account_history's filter
+      with_mock NaiveDateTime, utc_now: fn -> one_day_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :day)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
+    end
+
+    test ":month" do
+      today = NaiveDateTime.utc_now()
+      one_month_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24 * 30)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      with_mock NaiveDateTime, utc_now: fn -> one_month_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :month)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
+    end
+
+    test ":year" do
+      today = NaiveDateTime.utc_now()
+      one_year_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24 * 365)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      with_mock NaiveDateTime, utc_now: fn -> one_year_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :year)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
     end
 
     test "invalid filter" do
