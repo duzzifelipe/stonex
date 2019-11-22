@@ -131,3 +131,7 @@ After writing the workflows and running a lot of times, here are the conclusions
 
  In production, the compiled binary provides a command to run elixir code by running `_build/dev/rel/stonex/bin/stonex eval "code"`. Then, before starting up the server on docker image, the following command takes care of migrations: `_build/dev/rel/stonex/bin/stonex eval "Stonex.Release.migrate()"`.
  
+
+ ### Tests Coverage
+
+For checking tests coverage, the library `excoveralls` is used. It can be called by running `mix coveralls` (results on console) and `mix coveralls.html` to generate a html page holding results and code points in `./cover/excoveralls.html`.
