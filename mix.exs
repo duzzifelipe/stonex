@@ -51,7 +51,8 @@ defmodule Stonex.MixProject do
       {:bcrypt_elixir, "~> 2.0"},
       {:cpf, "~> 1.0"},
       {:excoveralls, "~> 0.12", only: :test},
-      {:mock, "~> 0.3.0", only: :test}
+      {:mock, "~> 0.3.0", only: :test},
+      {:money, "~> 1.6"}
     ]
   end
 
