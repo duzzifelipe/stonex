@@ -8,7 +8,7 @@ defmodule Stonex.Accounts.Repository do
   import Ecto.Query, warn: false
 
   alias Stonex.Repo
-  alias Stonex.Accounts.Account
+  alias Stonex.Accounts.{Account, AccountHistory}
   alias Stonex.Users.User
 
   # default account balance on creation is 1.000,00

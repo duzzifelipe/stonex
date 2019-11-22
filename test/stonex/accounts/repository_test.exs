@@ -27,6 +27,15 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert account.number == 1
       assert account.user_id == user.id
       assert account.balance == 100_000
+
+      # validate transaction history
+      transactions = Accounts.Repository.list_account_history(account, :all)
+      assert Enum.count(transactions) == 1
+
+      transaction = Enum.at(transactions, 0)
+      assert transaction.account_id == account.id
+      assert transaction.type == "credit"
+      assert transaction.amount == 100_000
     end
 
     test "create_account/2 with new agency" do
@@ -73,6 +82,17 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       assert {:ok, account_updated} = Accounts.Repository.withdraw_money(account, 90_000)
       assert account_updated.balance == 10_000
+
+      # the account has a first transaction from setup
+      # so this one on the test is the second one
+      transactions = Accounts.Repository.list_account_history(account_updated, :all)
+
+      assert Enum.count(transactions) == 2
+
+      transaction = Enum.at(transactions, 1)
+      assert transaction.account_id == account.id
+      assert transaction.type == "debit"
+      assert transaction.amount == 90_000
     end
 
     test "withdraw_money/2 with not enough money" do
@@ -107,6 +127,24 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       assert new_1.balance == 10_000
       assert new_2.balance == 190_000
+
+      # both accounts have the first credit
+      # but this checks for the second one
+      transactions_1 = Accounts.Repository.list_account_history(account_1, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account_2, :all)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 2
+
+      transaction_1 = Enum.at(transactions_1, 1)
+      assert transaction_1.account_id == account_1.id
+      assert transaction_1.type == "debit"
+      assert transaction_1.amount == 90_000
+
+      transaction_2 = Enum.at(transactions_2, 1)
+      assert transaction_2.account_id == account_2.id
+      assert transaction_2.type == "credit"
+      assert transaction_2.amount == 90_000
     end
 
     test "transfer_money/3 with not enough money on debit account" do
