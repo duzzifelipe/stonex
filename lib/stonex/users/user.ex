@@ -7,6 +7,8 @@ defmodule Stonex.Users.User do
   schema logic are registration and authentication
   """
 
+  @type t :: %__MODULE__{}
+
   use Ecto.Schema
   import Ecto.Changeset
 

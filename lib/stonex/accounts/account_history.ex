@@ -8,6 +8,8 @@ defmodule Stonex.Accounts.AccountHistory do
   debited, always as positive values.
   """
 
+  @type t :: %__MODULE__{}
+
   alias Stonex.Accounts.Account
 
   use Ecto.Schema

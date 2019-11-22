@@ -14,6 +14,8 @@ defmodule Stonex.Accounts.Account do
   This requires users to provide correct values.
   """
 
+  @type t :: %__MODULE__{}
+
   alias Stonex.Users.User
   alias Stonex.Accounts.AccountHistory
 
