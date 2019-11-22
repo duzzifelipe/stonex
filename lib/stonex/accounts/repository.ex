@@ -8,7 +8,7 @@ defmodule Stonex.Accounts.Repository do
   import Ecto.Query, warn: false
 
   alias Stonex.Repo
-  alias Stonex.Accounts.Account
+  alias Stonex.Accounts.{Account, AccountHistory}
   alias Stonex.Users.User
 
   # default account balance on creation is 1.000,00
@@ -46,14 +46,23 @@ defmodule Stonex.Accounts.Repository do
   def create_account(%User{id: user_id}, agency) when is_number(agency) do
     number = get_next_account_number(agency)
 
-    %Account{}
-    |> Account.create_changeset(%{
-      user_id: user_id,
-      agency: agency,
-      number: number,
-      balance: @default_balance
-    })
-    |> Repo.insert()
+    changeset =
+      %Account{}
+      |> Account.create_changeset(%{
+        user_id: user_id,
+        agency: agency,
+        number: number,
+        balance: @default_balance
+      })
+
+    case Repo.insert(changeset) do
+      {:ok, account} ->
+        register_transaction_history(account, "credit", account.balance)
+        {:ok, account}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -90,7 +99,14 @@ defmodule Stonex.Accounts.Repository do
     changeset = Account.update_balance_changeset(account, :debit, amount)
 
     if changeset.valid? do
-      Repo.update(changeset)
+      case Repo.update(changeset) do
+        {:ok, updated} ->
+          register_transaction_history(updated, "debit", amount)
+          {:ok, updated}
+
+        error ->
+          error
+      end
     else
       {:error, changeset.errors}
     end
@@ -129,7 +145,8 @@ defmodule Stonex.Accounts.Repository do
       ...> [new_1.balance, new_2.balance]
       [99800, 100200]
   """
-  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) :: any
+  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) ::
+          {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any, any}
   def transfer_money(%Account{} = account_debit, %Account{} = account_credit, amount) do
     changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
     changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
@@ -139,11 +156,55 @@ defmodule Stonex.Accounts.Repository do
         new_debit = Repo.update!(changeset_debit)
         new_credit = Repo.update!(changeset_credit)
 
+        register_transaction_history(new_debit, "debit", amount)
+        register_transaction_history(new_credit, "credit", amount)
+
         {new_debit, new_credit}
       end)
     else
       {:error, {changeset_debit.errors, changeset_credit.errors}}
     end
+  end
+
+  @doc """
+  Receives an account object and return
+  a list of all transactions made by this
+  account on an specific range, defined
+  by the second argument:
+  :all, :year, :month, :day
+
+  ## Examples
+
+      iex> {:ok, created_user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account} = Stonex.Accounts.Repository.create_account(
+      ...>   created_user,
+      ...>   1
+      ...> )
+      ...> history = Stonex.Accounts.Repository.list_account_history(
+      ...>   account, :all
+      ...> )
+      ...> Enum.count(history) == 1 && Enum.at(history, 0).amount === 100_000
+      true
+  """
+  @spec list_account_history(Stonex.Accounts.Account.t(), :all | :year | :month | :day) ::
+          list(Stonex.Accounts.AccountHistory.t())
+  def list_account_history(%Account{id: account_id}, :all) do
+    Repo.all(account_history_query(account_id))
+  end
+
+  def list_account_history(%Account{id: account_id}, type)
+      when type == :year or type == :month or type == :day do
+    min_date = build_min_date(type)
+
+    from(h in account_history_query(account_id), where: h.inserted_at > ^min_date)
+    |> Repo.all()
   end
 
   defp get_next_account_number(agency) do
@@ -159,5 +220,40 @@ defmodule Stonex.Accounts.Repository do
   defp get_one_account_by_digit(agency) do
     from(a in Account, where: a.agency == ^agency, order_by: [desc: :number])
     |> Repo.one()
+  end
+
+  defp register_transaction_history(%Account{id: account_id}, type, amount) do
+    params = %{
+      account_id: account_id,
+      amount: amount,
+      type: type
+    }
+
+    AccountHistory.create_changeset(%AccountHistory{}, params)
+    |> Repo.insert!()
+  end
+
+  defp build_min_date(type) do
+    subtractor = build_min_date_subtractor(type)
+
+    Date.utc_today()
+    |> Date.add(-subtractor)
+  end
+
+  defp build_min_date_subtractor(type) do
+    case type do
+      :year ->
+        365
+
+      :month ->
+        30
+
+      :day ->
+        1
+    end
+  end
+
+  defp account_history_query(account_id) do
+    from(h in AccountHistory, where: h.account_id == ^account_id, order_by: [desc: :inserted_at])
   end
 end
