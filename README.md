@@ -121,3 +121,13 @@ After writing the workflows and running a lot of times, here are the conclusions
  - The free plan gives 2000 minutes;
  - It has plans for building on MacOS too;
  - The negative point found during the development is that if you want to reuse steps across your workflows, it requires some node js code and not only referencing something in yml.
+
+ ### Database Migrations
+
+ Ecto provides a tool for running migrations with ease on development environment. Commands used are:
+ `mix ecto.gen.migration MIGRATION_NAME` to create a new migration file and `mix ecto.migrate` to run it.
+
+ Since this project is building a release, `mix` tool won't be available in production. To solve this problem, a helper was created in `lib/stonex/release.ex` and is accessible by calling `Stonex.Release.migrate()` - this module starts up the application by itself and calls ecto migrator.
+
+ In production, the compiled binary provides a command to run elixir code by running `_build/dev/rel/stonex/bin/stonex eval "code"`. Then, before starting up the server on docker image, the following command takes care of migrations: `_build/dev/rel/stonex/bin/stonex eval "Stonex.Release.migrate()"`.
+ 
