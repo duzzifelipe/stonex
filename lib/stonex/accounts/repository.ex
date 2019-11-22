@@ -47,13 +47,13 @@ defmodule Stonex.Accounts.Repository do
     number = get_next_account_number(agency)
 
     changeset =
-    %Account{}
-    |> Account.create_changeset(%{
-      user_id: user_id,
-      agency: agency,
-      number: number,
-      balance: @default_balance
-    })
+      %Account{}
+      |> Account.create_changeset(%{
+        user_id: user_id,
+        agency: agency,
+        number: number,
+        balance: @default_balance
+      })
 
     case Repo.insert(changeset) do
       {:ok, account} ->
@@ -166,6 +166,47 @@ defmodule Stonex.Accounts.Repository do
     end
   end
 
+  @doc """
+  Receives an account object and return
+  a list of all transactions made by this
+  account on an specific range, defined
+  by the second argument:
+  :all, :year, :month, :day
+
+  ## Examples
+
+      iex> {:ok, created_user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account} = Stonex.Accounts.Repository.create_account(
+      ...>   created_user,
+      ...>   1
+      ...> )
+      ...> history = Stonex.Accounts.Repository.list_account_history(
+      ...>   account, :all
+      ...> )
+      ...> Enum.count(history) == 1 && Enum.at(history, 0).amount === 100_000
+      true
+  """
+  @spec list_account_history(Stonex.Accounts.Account.t(), :all | :year | :month | :day) ::
+          list(Stonex.Accounts.AccountHistory.t())
+  def list_account_history(%Account{id: account_id}, :all) do
+    Repo.all(account_history_query(account_id))
+  end
+
+  def list_account_history(%Account{id: account_id}, type)
+      when type == :year or type == :month or type == :day do
+    min_date = build_min_date(type)
+
+    from(h in account_history_query(account_id), where: h.inserted_at > ^min_date)
+    |> Repo.all()
+  end
+
   defp get_next_account_number(agency) do
     last_account = get_one_account_by_digit(agency)
 
@@ -190,5 +231,29 @@ defmodule Stonex.Accounts.Repository do
 
     AccountHistory.create_changeset(%AccountHistory{}, params)
     |> Repo.insert!()
+  end
+
+  defp build_min_date(type) do
+    subtractor = build_min_date_subtractor(type)
+
+    Date.utc_today()
+    |> Date.add(-subtractor)
+  end
+
+  defp build_min_date_subtractor(type) do
+    case type do
+      :year ->
+        365
+
+      :month ->
+        30
+
+      :day ->
+        1
+    end
+  end
+
+  defp account_history_query(account_id) do
+    from(h in AccountHistory, where: h.account_id == ^account_id, order_by: [desc: :inserted_at])
   end
 end
