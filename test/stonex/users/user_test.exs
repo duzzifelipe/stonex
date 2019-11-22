@@ -5,7 +5,7 @@ defmodule Stonex.UserTest do
 
   doctest Stonex.Users.User
 
-  describe "users" do
+  describe "users signup_changeset/2" do
     @pwd Faker.String.base64(8)
 
     @valid_parameters %{
@@ -17,7 +17,7 @@ defmodule Stonex.UserTest do
       password_confirmation: @pwd
     }
 
-    test "signup_changeset/2 with valid parameters" do
+    test "with valid parameters" do
       changeset = User.signup_changeset(%User{}, @valid_parameters)
       assert changeset.valid?
 
@@ -25,12 +25,12 @@ defmodule Stonex.UserTest do
       assert User.password_valid?(user, @pwd)
     end
 
-    test "signup_changeset/2 with no arguments" do
+    test "with no arguments" do
       changeset = User.signup_changeset(%User{}, %{})
       assert !changeset.valid?
     end
 
-    test "signup_changeset/2 without first name" do
+    test "without first name" do
       params = Map.delete(@valid_parameters, :first_name)
       changeset = User.signup_changeset(%User{}, params)
 
@@ -40,7 +40,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "signup_changeset/2 without registration_id" do
+    test "without registration_id" do
       params = Map.delete(@valid_parameters, :registration_id)
       changeset = User.signup_changeset(%User{}, params)
 
@@ -50,7 +50,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "signup_changeset/2 without email" do
+    test "without email" do
       params = Map.delete(@valid_parameters, :email)
       changeset = User.signup_changeset(%User{}, params)
 
@@ -60,7 +60,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "signup_changeset/2 with wrong email format" do
+    test "with wrong email format" do
       params = Map.put(@valid_parameters, :email, Faker.String.base64(15))
       changeset = User.signup_changeset(%User{}, params)
 
@@ -70,7 +70,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "has invalid format"
     end
 
-    test "signup_changeset/2 without password" do
+    test "without password" do
       params = Map.delete(@valid_parameters, :password)
       changeset = User.signup_changeset(%User{}, params)
 
@@ -80,7 +80,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "signup_changeset/2 without password confirmation" do
+    test "without password confirmation" do
       params = Map.delete(@valid_parameters, :password_confirmation)
       changeset = User.signup_changeset(%User{}, params)
 
@@ -90,7 +90,7 @@ defmodule Stonex.UserTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "signup_changeset/2 with small password" do
+    test "with small password" do
       pwd = Faker.String.base64(4)
 
       params =
@@ -108,7 +108,7 @@ defmodule Stonex.UserTest do
       assert Keyword.fetch!(elem(error, 1), :count) == 6
     end
 
-    test "signup_changeset/2 with password not matching" do
+    test "with password not matching" do
       params = Map.put(@valid_parameters, :password_confirmation, Faker.String.base64(6))
       changeset = User.signup_changeset(%User{}, params)
 

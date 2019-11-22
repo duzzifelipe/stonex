@@ -5,7 +5,7 @@ defmodule Stonex.AccountTest do
 
   doctest Stonex.Accounts.Account
 
-  describe "accounts" do
+  describe "accounts create_changeset/2" do
     @valid_parameters %{
       user_id: Faker.Util.pick(0..100),
       agency: Faker.Util.pick(1000..99_999),
@@ -13,12 +13,12 @@ defmodule Stonex.AccountTest do
       balance: Faker.Util.pick(0..9_999_999)
     }
 
-    test "create_changeset/2 with valid parameters" do
+    test "with valid parameters" do
       changeset = Account.create_changeset(%Account{}, @valid_parameters)
       assert changeset.valid?
     end
 
-    test "create_changeset/2 without user_id" do
+    test "without user_id" do
       params = Map.delete(@valid_parameters, :user_id)
       changeset = Account.create_changeset(%Account{}, params)
 
@@ -28,7 +28,7 @@ defmodule Stonex.AccountTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "create_changeset/2 without number" do
+    test "without number" do
       params = Map.delete(@valid_parameters, :number)
       changeset = Account.create_changeset(%Account{}, params)
 
@@ -38,7 +38,7 @@ defmodule Stonex.AccountTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "create_changeset/2 without agency" do
+    test "without agency" do
       params = Map.delete(@valid_parameters, :agency)
       changeset = Account.create_changeset(%Account{}, params)
 
@@ -48,7 +48,7 @@ defmodule Stonex.AccountTest do
       assert elem(error, 0) == "can't be blank"
     end
 
-    test "create_changeset/2 without balance" do
+    test "without balance" do
       params = Map.delete(@valid_parameters, :balance)
       changeset = Account.create_changeset(%Account{}, params)
 
@@ -57,8 +57,10 @@ defmodule Stonex.AccountTest do
       error = Keyword.fetch!(changeset.errors, :balance)
       assert elem(error, 0) == "can't be blank"
     end
+  end
 
-    test "update_balance_changeset/3 :debit with enough money" do
+  describe "accounts update_balance_changeset/3" do
+    test ":debit with enough money" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 1_000)
       assert changeset.valid?
       assert changeset.changes.balance == 0
@@ -68,32 +70,32 @@ defmodule Stonex.AccountTest do
       assert changeset.changes.balance == 400
     end
 
-    test "update_balance_changeset/3 :debit with not enough money" do
+    test ":debit with not enough money" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 1_500)
       assert !changeset.valid?
     end
 
-    test "update_balance_changeset/3 :debit with not a number" do
+    test ":debit with not a number" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, nil)
       assert !changeset.valid?
     end
 
-    test "update_balance_changeset/3 :debit with negative number" do
+    test ":debit with negative number" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, -900)
       assert !changeset.valid?
     end
 
-    test "update_balance_changeset/3 :debit with zero" do
+    test ":debit with zero" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :debit, 0)
       assert !changeset.valid?
     end
 
-    test "update_balance_changeset/3 :credit with not a number" do
+    test ":credit with not a number" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :credit, "abcd")
       assert !changeset.valid?
     end
 
-    test "update_balance_changeset/3 :credit with valid data" do
+    test ":credit with valid data" do
       changeset = Account.update_balance_changeset(%Account{balance: 1_000}, :credit, 1_200)
       assert changeset.valid?
       assert changeset.changes.balance == 2_200
