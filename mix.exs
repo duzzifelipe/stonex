@@ -50,7 +50,8 @@ defmodule Stonex.MixProject do
       {:faker, "~> 0.13", only: :test},
       {:bcrypt_elixir, "~> 2.0"},
       {:cpf, "~> 1.0"},
-      {:excoveralls, "~> 0.12", only: :test}
+      {:excoveralls, "~> 0.12", only: :test},
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 
