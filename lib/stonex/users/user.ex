@@ -42,6 +42,7 @@ defmodule Stonex.Users.User do
       ...> changeset.valid?
       true
   """
+  @spec signup_changeset(Stonex.Users.User.t(), map) :: Ecto.Changeset.t()
   def signup_changeset(%__MODULE__{} = user, attrs) do
     user
     |> cast(
