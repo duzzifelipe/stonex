@@ -135,3 +135,5 @@ After writing the workflows and running a lot of times, here are the conclusions
  ### Tests Coverage
 
 For checking tests coverage, the library `excoveralls` is used. It can be called by running `mix coveralls` (results on console) and `mix coveralls.html` to generate a html page holding results and code points in `./cover/excoveralls.html`.
+
+Some files were ignored from testing, like phoenix-generated functions and test support functions. The are listed in `coveralls.json`, inside the key `skip_files`.
