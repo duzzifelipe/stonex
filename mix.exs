@@ -10,7 +10,12 @@ defmodule Stonex.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -44,7 +49,9 @@ defmodule Stonex.MixProject do
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
       {:faker, "~> 0.13", only: :test},
       {:bcrypt_elixir, "~> 2.0"},
-      {:cpf, "~> 1.0"}
+      {:cpf, "~> 1.0"},
+      {:excoveralls, "~> 0.12", only: :test},
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 

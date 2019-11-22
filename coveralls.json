@@ -1,0 +1,10 @@
+{
+  "skip_files": [
+    "lib/stonex/application.ex",
+    "lib/stonex/release.ex",
+    "lib/stonex_web.ex",
+    "lib/stonex_web/router.ex",
+    "lib/stonex_web/views/error_helpers.ex",
+    "test/support/"
+  ]
+}

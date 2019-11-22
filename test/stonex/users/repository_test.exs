@@ -4,7 +4,7 @@ defmodule Stonex.Users.RepositoryTest do
 
   doctest Stonex.Users.Repository
 
-  describe "users repository" do
+  describe "users repository signup/1" do
     @pwd Faker.String.base64(8)
 
     @valid_parameters %{
@@ -16,7 +16,7 @@ defmodule Stonex.Users.RepositoryTest do
       password_confirmation: @pwd
     }
 
-    test "signup/1 with valid data" do
+    test "with valid data" do
       assert {:ok, user} = Repository.signup(@valid_parameters)
 
       assert user.first_name == @valid_parameters.first_name
@@ -26,7 +26,7 @@ defmodule Stonex.Users.RepositoryTest do
       assert User.password_valid?(user, @pwd)
     end
 
-    test "signup/1 with duplicated email" do
+    test "with duplicated email" do
       assert {:ok, user} = Repository.signup(@valid_parameters)
 
       repeated_email_attrs =
@@ -41,7 +41,7 @@ defmodule Stonex.Users.RepositoryTest do
       assert elem(error, 0) == "has already been taken"
     end
 
-    test "signup/1 with duplicated registration_id" do
+    test "with duplicated registration_id" do
       assert {:ok, user} = Repository.signup(@valid_parameters)
 
       repeated_reg_attrs = Map.put(@valid_parameters, :email, Faker.Internet.email())
@@ -53,8 +53,10 @@ defmodule Stonex.Users.RepositoryTest do
       error = Keyword.fetch!(changeset.errors, :registration_id)
       assert elem(error, 0) == "has already been taken"
     end
+  end
 
-    test "login/2 with valid attributes" do
+  describe "users repository login/2" do
+    test "with valid attributes" do
       assert {:ok, registered_user} = Repository.signup(@valid_parameters)
       assert {:ok, user} = Repository.login(registered_user.email, @pwd)
 
@@ -62,24 +64,24 @@ defmodule Stonex.Users.RepositoryTest do
       assert user.registration_id == registered_user.registration_id
     end
 
-    test "login/2 with invalid password" do
+    test "with invalid password" do
       assert {:ok, registered_user} = Repository.signup(@valid_parameters)
 
       assert {:error, "invalid user and password"} =
                Repository.login(registered_user.email, Faker.String.base64(6))
     end
 
-    test "login/2 with nil password" do
+    test "with nil password" do
       assert {:ok, registered_user} = Repository.signup(@valid_parameters)
 
       assert {:error, "invalid user and password"} = Repository.login(registered_user.email, nil)
     end
 
-    test "login/2 with nil email" do
+    test "with nil email" do
       assert {:error, "invalid user and password"} = Repository.login(nil, @pwd)
     end
 
-    test "login/2 with nonexistent email" do
+    test "with nonexistent email" do
       assert {:ok, registered_user} = Repository.signup(@valid_parameters)
 
       assert {:error, "invalid user and password"} =

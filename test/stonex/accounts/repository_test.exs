@@ -5,7 +5,9 @@ defmodule Stonex.Accounts.RepositoryTest do
 
   doctest Stonex.Accounts.Repository
 
-  describe "accounts repository" do
+  import Mock
+
+  describe "accounts repository create_account/2" do
     @pwd Faker.String.base64(8)
 
     @valid_user_parameters %{
@@ -17,7 +19,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       password_confirmation: @pwd
     }
 
-    test "create_account/2 with valid data" do
+    test "with valid data" do
       agency = Faker.Util.pick(0..100)
 
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
@@ -38,7 +40,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert transaction.amount == 100_000
     end
 
-    test "create_account/2 with new agency" do
+    test "with new agency" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -52,7 +54,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert account_2.number == 1
     end
 
-    test "create_account/2 with same agency" do
+    test "with same agency" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -66,7 +68,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert account_2.number == 2
     end
 
-    test "create_account/2 with nonexistent user" do
+    test "with nonexistent user" do
       user = %Users.User{id: 1}
       {:error, changeset} = Accounts.Repository.create_account(user, 1)
 
@@ -75,8 +77,10 @@ defmodule Stonex.Accounts.RepositoryTest do
       error = Keyword.fetch!(changeset.errors, :user_id)
       assert elem(error, 0) == "does not exist"
     end
+  end
 
-    test "withdraw_money/2 with valid parameters" do
+  describe "accounts repository withdraw_money/2" do
+    test "with valid parameters" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
@@ -95,7 +99,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert transaction.amount == 90_000
     end
 
-    test "withdraw_money/2 with not enough money" do
+    test "with not enough money" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
@@ -105,7 +109,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert elem(error, 0) == "provided value is not valid"
     end
 
-    test "withdraw_money/2 with nonexistent account" do
+    test "with nonexistent account" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
@@ -115,8 +119,10 @@ defmodule Stonex.Accounts.RepositoryTest do
         Accounts.Repository.withdraw_money(new_account, 90_000)
       end)
     end
+  end
 
-    test "transfer_money/3 with valid parameters" do
+  describe "accounts repository transfer_money/3" do
+    test "with valid parameters" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -147,7 +153,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert transaction_2.amount == 90_000
     end
 
-    test "transfer_money/3 with not enough money on debit account" do
+    test "with not enough money on debit account" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -160,7 +166,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert chnst_2 == []
     end
 
-    test "transfer_money/3 with invalid amount" do
+    test "with invalid amount" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -173,7 +179,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert chnst_2 == [balance: {"provided value is not valid", []}]
     end
 
-    test "transfer_money/3 with nonexistent debit account" do
+    test "with nonexistent debit account" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -191,7 +197,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert new_2.balance == 100_000
     end
 
-    test "transfer_money/3 with nonexistent credit account" do
+    test "with nonexistent credit account" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
@@ -208,8 +214,10 @@ defmodule Stonex.Accounts.RepositoryTest do
       new_1 = Repo.get!(Accounts.Account, account_1.id)
       assert new_1.balance == 100_000
     end
+  end
 
-    test "list_account_history/2 :all" do
+  describe "accounts repository list_account_history/2" do
+    test ":all" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
@@ -231,7 +239,66 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert transaction_2.amount == 60_000
     end
 
-    test "list_account_history/2 invalid filter" do
+    test ":day" do
+      today = NaiveDateTime.utc_now()
+      one_day_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      # this is a little bit strange:
+      # since account was created without mock (today)
+      # the transaction is made with mock (two days ago)
+      # but since there is no validation for it
+      # it helps testing the list_account_history's filter
+      with_mock NaiveDateTime, utc_now: fn -> one_day_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :day)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
+    end
+
+    test ":month" do
+      today = NaiveDateTime.utc_now()
+      one_month_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24 * 30)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      with_mock NaiveDateTime, utc_now: fn -> one_month_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :month)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
+    end
+
+    test ":year" do
+      today = NaiveDateTime.utc_now()
+      one_year_ago = NaiveDateTime.add(today, -1 * 60 * 60 * 24 * 365)
+
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      with_mock NaiveDateTime, utc_now: fn -> one_year_ago end do
+        assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
+      end
+
+      transactions_1 = Accounts.Repository.list_account_history(account, :all)
+      transactions_2 = Accounts.Repository.list_account_history(account, :year)
+
+      assert Enum.count(transactions_1) == 2
+      assert Enum.count(transactions_2) == 1
+    end
+
+    test "invalid filter" do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 

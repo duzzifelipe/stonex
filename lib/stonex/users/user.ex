@@ -7,6 +7,8 @@ defmodule Stonex.Users.User do
   schema logic are registration and authentication
   """
 
+  @type t :: %__MODULE__{}
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -42,7 +44,7 @@ defmodule Stonex.Users.User do
       ...> changeset.valid?
       true
   """
-  @spec signup_changeset(Stonex.Users.User.t(), map) :: Ecto.Changeset.t()
+  @spec signup_changeset(Stonex.Users.User.t(), map()) :: Ecto.Changeset.t()
   def signup_changeset(%__MODULE__{} = user, attrs) do
     user
     |> cast(
@@ -93,7 +95,7 @@ defmodule Stonex.Users.User do
       ...> )
       true
   """
-  @spec password_valid?(Stonex.Users.User.t(), String.t()) :: boolean
+  @spec password_valid?(Stonex.Users.User.t(), String.t()) :: boolean()
   def password_valid?(%__MODULE__{} = user, password) do
     case Bcrypt.check_pass(user, password) do
       {:ok, _user} -> true

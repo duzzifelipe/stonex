@@ -14,6 +14,8 @@ defmodule Stonex.Accounts.Repository do
   # default account balance on creation is 1.000,00
   @default_balance 100_000
 
+  @one_day_seconds 60 * 60 * 24
+
   @doc """
   Receives an user instance and an agency number
   and create a new account for it.
@@ -42,7 +44,7 @@ defmodule Stonex.Accounts.Repository do
       true
   """
 
-  @spec create_account(User.t(), number) :: Account.t()
+  @spec create_account(User.t(), pos_integer()) :: Account.t()
   def create_account(%User{id: user_id}, agency) when is_number(agency) do
     number = get_next_account_number(agency)
 
@@ -93,7 +95,7 @@ defmodule Stonex.Accounts.Repository do
       ...> account.balance
       99800
   """
-  @spec withdraw_money(Stonex.Accounts.Account.t(), integer) ::
+  @spec withdraw_money(Stonex.Accounts.Account.t(), pos_integer()) ::
           {:ok, Stonex.Accounts.Account.t()} | {:error, any}
   def withdraw_money(%Account{} = account, amount) do
     changeset = Account.update_balance_changeset(account, :debit, amount)
@@ -145,8 +147,8 @@ defmodule Stonex.Accounts.Repository do
       ...> [new_1.balance, new_2.balance]
       [99800, 100200]
   """
-  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) ::
-          {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any, any}
+  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), pos_integer()) ::
+          {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any(), any()}
   def transfer_money(%Account{} = account_debit, %Account{} = account_credit, amount) do
     changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
     changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
@@ -193,7 +195,7 @@ defmodule Stonex.Accounts.Repository do
       ...> Enum.count(history) == 1 && Enum.at(history, 0).amount === 100_000
       true
   """
-  @spec list_account_history(Stonex.Accounts.Account.t(), :all | :year | :month | :day) ::
+  @spec list_account_history(Stonex.Accounts.Account.t(), atom()) ::
           list(Stonex.Accounts.AccountHistory.t())
   def list_account_history(%Account{id: account_id}, :all) do
     Repo.all(account_history_query(account_id))
@@ -203,7 +205,9 @@ defmodule Stonex.Accounts.Repository do
       when type == :year or type == :month or type == :day do
     min_date = build_min_date(type)
 
-    from(h in account_history_query(account_id), where: h.inserted_at > ^min_date)
+    from(h in account_history_query(account_id),
+      where: h.inserted_at > ^min_date
+    )
     |> Repo.all()
   end
 
@@ -236,8 +240,8 @@ defmodule Stonex.Accounts.Repository do
   defp build_min_date(type) do
     subtractor = build_min_date_subtractor(type)
 
-    Date.utc_today()
-    |> Date.add(-subtractor)
+    %{NaiveDateTime.utc_now() | microsecond: {0, 0}, second: 59, minute: 59, hour: 23}
+    |> NaiveDateTime.add(-1 * @one_day_seconds * subtractor)
   end
 
   defp build_min_date_subtractor(type) do
