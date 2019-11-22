@@ -160,4 +160,15 @@ defmodule Stonex.Accounts.Repository do
     from(a in Account, where: a.agency == ^agency, order_by: [desc: :number])
     |> Repo.one()
   end
+
+  defp register_transaction_history(%Account{id: account_id}, type, amount) do
+    params = %{
+      account_id: account_id,
+      amount: amount,
+      type: type
+    }
+
+    AccountHistory.create_changeset(%AccountHistory{}, params)
+    |> Repo.insert!()
+  end
 end
