@@ -64,7 +64,7 @@ jobs:
         echo '${{ secrets.GOOGLE_SERVICE_KEY }}' > /tmp/gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json
         gcloud --quiet config set project personal-231922
-        gcloud --quiet config set compute/zone us-central1
+        gcloud --quiet config set compute/zone us-central1-a
         gcloud auth configure-docker
     - name: Configure Project Secrets
       run: |
