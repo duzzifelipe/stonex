@@ -50,4 +50,4 @@ ENV HOME=/app
 
 EXPOSE ${PORT}
 
-CMD ["/app/bin/stonex", "start"]
+CMD /app/bin/stonex eval "Stonex.Release.migrate()" ; /app/bin/stonex start
