@@ -49,6 +49,7 @@ defmodule Stonex.Accounts.Account do
       ...> changeset.valid?
       true
   """
+  @spec create_changeset(Stonex.Accounts.Account.t(), map) :: Ecto.Changeset.t()
   def create_changeset(%__MODULE__{} = account, attrs) do
     account
     |> cast(attrs, [:agency, :number, :user_id, :balance])
@@ -76,6 +77,8 @@ defmodule Stonex.Accounts.Account do
       ...> changeset.valid?
       false
   """
+  @spec update_balance_changeset(Stonex.Accounts.Account.t(), :debit, integer) ::
+          Ecto.Changeset.t()
   def update_balance_changeset(%__MODULE__{} = account, :debit, amount) do
     changeset = cast(account, %{}, [])
 
@@ -98,6 +101,8 @@ defmodule Stonex.Accounts.Account do
       ...> changeset.valid?
       true
   """
+  @spec update_balance_changeset(Stonex.Accounts.Account.t(), :credit, integer) ::
+          Ecto.Changeset.t()
   def update_balance_changeset(%__MODULE__{} = account, :credit, amount) do
     changeset = cast(account, %{}, [])
 
