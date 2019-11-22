@@ -46,6 +46,7 @@ defmodule Stonex.Accounts.Repository do
   def create_account(%User{id: user_id}, agency) when is_number(agency) do
     number = get_next_account_number(agency)
 
+    changeset =
     %Account{}
     |> Account.create_changeset(%{
       user_id: user_id,
@@ -53,7 +54,15 @@ defmodule Stonex.Accounts.Repository do
       number: number,
       balance: @default_balance
     })
-    |> Repo.insert()
+
+    case Repo.insert(changeset) do
+      {:ok, account} ->
+        register_transaction_history(account, "credit", account.balance)
+        {:ok, account}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -90,7 +99,14 @@ defmodule Stonex.Accounts.Repository do
     changeset = Account.update_balance_changeset(account, :debit, amount)
 
     if changeset.valid? do
-      Repo.update(changeset)
+      case Repo.update(changeset) do
+        {:ok, updated} ->
+          register_transaction_history(updated, "debit", amount)
+          {:ok, updated}
+
+        error ->
+          error
+      end
     else
       {:error, changeset.errors}
     end
@@ -129,7 +145,8 @@ defmodule Stonex.Accounts.Repository do
       ...> [new_1.balance, new_2.balance]
       [99800, 100200]
   """
-  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) :: any
+  @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), integer) ::
+          {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any, any}
   def transfer_money(%Account{} = account_debit, %Account{} = account_credit, amount) do
     changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
     changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
@@ -138,6 +155,9 @@ defmodule Stonex.Accounts.Repository do
       Repo.transaction(fn ->
         new_debit = Repo.update!(changeset_debit)
         new_credit = Repo.update!(changeset_credit)
+
+        register_transaction_history(new_debit, "debit", amount)
+        register_transaction_history(new_credit, "credit", amount)
 
         {new_debit, new_credit}
       end)
