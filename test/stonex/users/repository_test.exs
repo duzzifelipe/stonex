@@ -13,7 +13,8 @@ defmodule Stonex.Users.RepositoryTest do
       registration_id: to_string(CPF.generate()),
       email: Faker.Internet.email(),
       password: @pwd,
-      password_confirmation: @pwd
+      password_confirmation: @pwd,
+      agency: Faker.Util.pick(1..99)
     }
 
     test "with valid data" do
