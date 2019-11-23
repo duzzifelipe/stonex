@@ -75,4 +75,40 @@ defmodule Stonex.AuthenticationControllerTest do
       } = response
     end
   end
+
+  describe "authentication_controller POST /login" do
+    test "with valid data" do
+      # create user
+      build_conn()
+      |> post("/api/signup", @valid_user_data)
+      |> json_response(200)
+
+      # login
+      response =
+        build_conn()
+        |> post("/api/login", @valid_user_data)
+        |> json_response(200)
+
+      assert %{
+               "error" => nil,
+               "user" => %{
+                 "email" => _,
+                 "first_name" => _,
+                 "id" => _,
+                 "last_name" => _,
+                 "registration_id" => _
+               }
+             } = response
+    end
+
+    test "with invalid data" do
+      # login
+      response =
+        build_conn()
+        |> post("/api/login", @valid_user_data)
+        |> json_response(400)
+
+      assert %{"error" => "invalid user and password", "user" => nil} = response
+    end
+  end
 end
