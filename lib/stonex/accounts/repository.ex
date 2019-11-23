@@ -45,7 +45,8 @@ defmodule Stonex.Accounts.Repository do
       true
   """
 
-  @spec create_account(User.t(), pos_integer()) :: Account.t()
+  @spec create_account(User.t(), pos_integer()) ::
+          {:ok, Account.t()} | {:error, Ecto.Changeset.t()}
   def create_account(%User{id: user_id}, agency) when is_number(agency) do
     number = get_next_account_number(agency)
 
