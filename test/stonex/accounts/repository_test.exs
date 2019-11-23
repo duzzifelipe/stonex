@@ -32,9 +32,12 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       # validate transaction history
       transactions = Accounts.Repository.list_account_history(account, :all)
-      assert Enum.count(transactions) == 1
+      assert Enum.count(transactions.items) == 1
 
-      transaction = Enum.at(transactions, 0)
+      assert transactions.total_credit == 100_000
+      assert transactions.total_debit == 0
+
+      transaction = Enum.at(transactions.items, 0)
       assert transaction.account_id == account.id
       assert transaction.type == "credit"
       assert transaction.amount == 100_000
@@ -92,9 +95,12 @@ defmodule Stonex.Accounts.RepositoryTest do
       # so this one on the test is the second one
       transactions = Accounts.Repository.list_account_history(account_updated, :all)
 
-      assert Enum.count(transactions) == 2
+      assert Enum.count(transactions.items) == 2
 
-      transaction = Enum.at(transactions, 1)
+      assert transactions.total_credit == 100_000
+      assert transactions.total_debit == 90_000
+
+      transaction = Enum.at(transactions.items, 1)
       assert transaction.account_id == account.id
       assert transaction.type == "debit"
       assert transaction.amount == 90_000
@@ -143,15 +149,21 @@ defmodule Stonex.Accounts.RepositoryTest do
       transactions_1 = Accounts.Repository.list_account_history(account_1, :all)
       transactions_2 = Accounts.Repository.list_account_history(account_2, :all)
 
-      assert Enum.count(transactions_1) == 2
-      assert Enum.count(transactions_2) == 2
+      assert Enum.count(transactions_1.items) == 2
+      assert Enum.count(transactions_2.items) == 2
 
-      transaction_1 = Enum.at(transactions_1, 1)
+      assert transactions_1.total_credit == 100_000
+      assert transactions_1.total_debit == 90_000
+
+      assert transactions_2.total_credit == 190_000
+      assert transactions_2.total_debit == 0
+
+      transaction_1 = Enum.at(transactions_1.items, 1)
       assert transaction_1.account_id == account_1.id
       assert transaction_1.type == "debit"
       assert transaction_1.amount == 90_000
 
-      transaction_2 = Enum.at(transactions_2, 1)
+      transaction_2 = Enum.at(transactions_2.items, 1)
       assert transaction_2.account_id == account_2.id
       assert transaction_2.type == "credit"
       assert transaction_2.amount == 90_000
@@ -235,14 +247,17 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       transactions = Accounts.Repository.list_account_history(account, :all)
 
-      assert Enum.count(transactions) == 2
+      assert Enum.count(transactions.items) == 2
 
-      transaction_1 = Enum.at(transactions, 0)
+      assert transactions.total_credit == 100_000
+      assert transactions.total_debit == 60_000
+
+      transaction_1 = Enum.at(transactions.items, 0)
       assert transaction_1.account_id == account.id
       assert transaction_1.type == "credit"
       assert transaction_1.amount == 100_000
 
-      transaction_2 = Enum.at(transactions, 1)
+      transaction_2 = Enum.at(transactions.items, 1)
       assert transaction_2.account_id == account.id
       assert transaction_2.type == "debit"
       assert transaction_2.amount == 60_000
@@ -271,8 +286,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       transactions_1 = Accounts.Repository.list_account_history(account, :all)
       transactions_2 = Accounts.Repository.list_account_history(account, :day)
 
-      assert Enum.count(transactions_1) == 2
-      assert Enum.count(transactions_2) == 1
+      assert Enum.count(transactions_1.items) == 2
+      assert Enum.count(transactions_2.items) == 1
     end
 
     test ":month" do
@@ -293,8 +308,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       transactions_1 = Accounts.Repository.list_account_history(account, :all)
       transactions_2 = Accounts.Repository.list_account_history(account, :month)
 
-      assert Enum.count(transactions_1) == 2
-      assert Enum.count(transactions_2) == 1
+      assert Enum.count(transactions_1.items) == 2
+      assert Enum.count(transactions_2.items) == 1
     end
 
     test ":year" do
@@ -315,8 +330,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       transactions_1 = Accounts.Repository.list_account_history(account, :all)
       transactions_2 = Accounts.Repository.list_account_history(account, :year)
 
-      assert Enum.count(transactions_1) == 2
-      assert Enum.count(transactions_2) == 1
+      assert Enum.count(transactions_1.items) == 2
+      assert Enum.count(transactions_2.items) == 1
     end
 
     test "invalid filter" do

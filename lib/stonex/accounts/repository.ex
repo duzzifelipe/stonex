@@ -200,13 +200,18 @@ defmodule Stonex.Accounts.Repository do
       ...> history = Stonex.Accounts.Repository.list_account_history(
       ...>   account, :all
       ...> )
-      ...> Enum.count(history) == 1 && Enum.at(history, 0).amount === 100_000
+      ...> Enum.count(history.items) == 1 && Enum.at(history.items, 0).amount === 100_000
       true
   """
   @spec list_account_history(Stonex.Accounts.Account.t(), atom()) ::
-          list(Stonex.Accounts.AccountHistory.t())
+          %{
+            items: list(Stonex.Accounts.AccountHistory.t()),
+            total_debit: pos_integer(),
+            total_credit: pos_integer()
+          }
   def list_account_history(%Account{id: account_id}, :all) do
     Repo.all(account_history_query(account_id))
+    |> put_history_accumulators()
   end
 
   def list_account_history(%Account{id: account_id}, type)
@@ -217,6 +222,7 @@ defmodule Stonex.Accounts.Repository do
       where: h.inserted_at > ^min_date
     )
     |> Repo.all()
+    |> put_history_accumulators()
   end
 
   defp get_next_account_number(agency) do
@@ -267,5 +273,20 @@ defmodule Stonex.Accounts.Repository do
 
   defp account_history_query(account_id) do
     from(h in AccountHistory, where: h.account_id == ^account_id, order_by: [desc: :inserted_at])
+  end
+
+  defp put_history_accumulators(history) do
+    %{
+      items: history,
+      total_credit: sum_amount_for(history, "credit"),
+      total_debit: sum_amount_for(history, "debit")
+    }
+  end
+
+  defp sum_amount_for(list, key) do
+    list
+    |> Enum.filter(fn row -> row.type == key end)
+    |> Enum.map(fn row -> row.amount end)
+    |> Enum.sum()
   end
 end
