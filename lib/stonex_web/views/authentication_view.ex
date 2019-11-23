@@ -13,6 +13,14 @@ defmodule StonexWeb.AuthenticationView do
     %{user: nil, account: nil, error: %{user: error_1, account: error_2}}
   end
 
+  def render("login.json", %{user: user, error: nil}) do
+    %{user: user, error: nil}
+  end
+
+  def render("login.json", %{user: nil, error: error}) do
+    %{user: nil, error: parse_error(error)}
+  end
+
   defp parse_error(error) do
     case error do
       %Ecto.Changeset{} ->

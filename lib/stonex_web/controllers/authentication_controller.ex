@@ -40,4 +40,18 @@ defmodule StonexWeb.AuthenticationController do
         })
     end
   end
+
+  @spec login(Plug.Conn.t(), %{email: binary(), password: binary()}) :: Plug.Conn.t()
+  def login(conn, %{"email" => email, "password" => password}) do
+    case Repository.login(email, password) do
+      {:ok, user} ->
+        conn
+        |> render("login.json", %{user: user, error: nil})
+
+      {:error, error} ->
+        conn
+        |> put_status(400)
+        |> render("login.json", %{user: nil, error: error})
+    end
+  end
 end

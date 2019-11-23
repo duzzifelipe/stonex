@@ -9,5 +9,6 @@ defmodule StonexWeb.Router do
     pipe_through :api
 
     post "/signup", AuthenticationController, :signup
+    post "/login", AuthenticationController, :login
   end
 end
