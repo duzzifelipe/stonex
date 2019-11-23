@@ -139,8 +139,17 @@ defmodule Stonex.Users.Repository do
     {:error, "invalid user and password"}
   end
 
+  @doc """
+  Given an email, returns the user
+  associated to it
+
+  ## Examples
+
+      iex> Stonex.Users.Repository.find_user_by_email("any@email.com")
+      nil
+  """
   @spec find_user_by_email(String.t()) :: User.t() | nil
-  defp find_user_by_email(email) do
+  def find_user_by_email(email) do
     from(u in User, where: u.email == ^email)
     |> Repo.one()
   end
