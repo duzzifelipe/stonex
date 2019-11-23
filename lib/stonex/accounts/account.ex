@@ -16,6 +16,14 @@ defmodule Stonex.Accounts.Account do
 
   @type t :: %__MODULE__{}
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :agency,
+             :number,
+             :balance
+           ]}
+
   alias Stonex.Users.User
   alias Stonex.Accounts.AccountHistory
 
