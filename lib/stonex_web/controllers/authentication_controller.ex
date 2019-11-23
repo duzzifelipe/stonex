@@ -8,6 +8,7 @@ defmodule StonexWeb.AuthenticationController do
   use StonexWeb, :controller
 
   alias Stonex.Users.Repository
+  alias Stonex.Users.Guardian
 
   @doc """
   Receives the data required by user schema to create
@@ -28,13 +29,19 @@ defmodule StonexWeb.AuthenticationController do
     case Repository.signup_with_account(params, agency) do
       {:ok, {user, account}} ->
         conn
-        |> render("signup.json", %{user: user, account: account, error: nil})
+        |> render("signup.json", %{
+          user: user,
+          auth: generate_auth(user),
+          account: account,
+          error: nil
+        })
 
       {:error, {error_1, error_2}} ->
         conn
         |> put_status(400)
         |> render("signup.json", %{
           user: nil,
+          auth: nil,
           account: nil,
           error: %{user: error_1, account: error_2}
         })
@@ -46,12 +53,17 @@ defmodule StonexWeb.AuthenticationController do
     case Repository.login(email, password) do
       {:ok, user} ->
         conn
-        |> render("login.json", %{user: user, error: nil})
+        |> render("login.json", %{user: user, auth: generate_auth(user), error: nil})
 
       {:error, error} ->
         conn
         |> put_status(400)
-        |> render("login.json", %{user: nil, error: error})
+        |> render("login.json", %{user: nil, auth: nil, error: error})
     end
+  end
+
+  defp generate_auth(user) do
+    {:ok, token, _} = Guardian.encode_and_sign(user)
+    token
   end
 end
