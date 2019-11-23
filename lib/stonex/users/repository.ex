@@ -11,13 +11,13 @@ defmodule Stonex.Users.Repository do
   alias Stonex.Accounts
 
   @type signup_data :: %{
-    email: String.t(),
-    first_name: String.t(),
-    last_name: String.t() | nil,
-    password: String.t(),
-    password_confirmation: String.t(),
-    registration_id: String.t()
-  }
+          email: String.t(),
+          first_name: String.t(),
+          last_name: String.t() | nil,
+          password: String.t(),
+          password_confirmation: String.t(),
+          registration_id: String.t()
+        }
 
   @doc """
   Receives a map with user data to be registered on the database
@@ -79,7 +79,9 @@ defmodule Stonex.Users.Repository do
     ...> :ok
     :ok
   """
-  @spec signup_with_account(signup_data(), pos_integer()) :: {:ok, {User.t(), Accounts.Account.t()}} | {:error, {Ecto.Changeset.t(), Ecto.Changeset.t()}}
+  @spec signup_with_account(signup_data(), pos_integer()) ::
+          {:ok, {User.t(), Accounts.Account.t()}}
+          | {:error, {Ecto.Changeset.t(), Ecto.Changeset.t()}}
   def signup_with_account(attrs, agency) do
     Repo.transaction(fn ->
       case signup(attrs) do
