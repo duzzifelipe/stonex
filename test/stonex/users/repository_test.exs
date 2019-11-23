@@ -124,4 +124,18 @@ defmodule Stonex.Users.RepositoryTest do
                Repository.login(Faker.Internet.email(), @pwd)
     end
   end
+
+  describe "users repository find_user_by_email/1" do
+    test "with existent email" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+      user = Repository.find_user_by_email(registered_user.email)
+
+      assert user.email == registered_user.email
+    end
+
+    test "with invalid email" do
+      user = Repository.find_user_by_email(Faker.Internet.email())
+      assert user == nil
+    end
+  end
 end
