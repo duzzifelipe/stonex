@@ -10,6 +10,7 @@ defmodule Stonex.Accounts.Repository do
   alias Stonex.Repo
   alias Stonex.Accounts.{Account, AccountHistory}
   alias Stonex.Users.User
+  alias Stonex.Services.DebitMailer
 
   # default account balance on creation is 1.000,00
   @default_balance 100_000
@@ -88,6 +89,7 @@ defmodule Stonex.Accounts.Repository do
       ...>   created_user,
       ...>   1
       ...> )
+      ...> account = Map.put(account, :user, created_user)
       ...> {:ok, account} = Stonex.Accounts.Repository.withdraw_money(
       ...>   account,
       ...>   200
@@ -97,13 +99,14 @@ defmodule Stonex.Accounts.Repository do
   """
   @spec withdraw_money(Stonex.Accounts.Account.t(), pos_integer()) ::
           {:ok, Stonex.Accounts.Account.t()} | {:error, any}
-  def withdraw_money(%Account{} = account, amount) do
+  def withdraw_money(%Account{user: %User{} = user} = account, amount) do
     changeset = Account.update_balance_changeset(account, :debit, amount)
 
     if changeset.valid? do
       case Repo.update(changeset) do
         {:ok, updated} ->
           register_transaction_history(updated, "debit", amount)
+          DebitMailer.send_debit_email(user, account, amount)
           {:ok, updated}
 
         error ->
@@ -139,6 +142,7 @@ defmodule Stonex.Accounts.Repository do
       ...>   created_user,
       ...>   1
       ...> )
+      ...> account_1 = Map.put(account_1, :user, created_user)
       ...> {:ok, {new_1, new_2}} = Stonex.Accounts.Repository.transfer_money(
       ...>   account_1,
       ...>   account_2,
@@ -149,7 +153,7 @@ defmodule Stonex.Accounts.Repository do
   """
   @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), pos_integer()) ::
           {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any(), any()}
-  def transfer_money(%Account{} = account_debit, %Account{} = account_credit, amount) do
+  def transfer_money(%Account{user: user} = account_debit, %Account{} = account_credit, amount) do
     changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
     changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
 
@@ -160,6 +164,8 @@ defmodule Stonex.Accounts.Repository do
 
         register_transaction_history(new_debit, "debit", amount)
         register_transaction_history(new_credit, "credit", amount)
+
+        DebitMailer.send_debit_email(user, account_debit, amount)
 
         {new_debit, new_credit}
       end)
