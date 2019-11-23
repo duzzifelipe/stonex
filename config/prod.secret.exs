@@ -29,6 +29,10 @@ config :stonex, StonexWeb.Endpoint,
   server: true,
   code_reloader: false
 
+config :stonex, Stonex.Users.Guardian,
+  issuer: "stonex",
+  secret_key: secret_key_base
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix

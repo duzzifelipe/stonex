@@ -25,6 +25,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# JWT library
+config :stonex, Stonex.Users.Guardian,
+  issuer: "stonex",
+  secret_key: "Secret key. You can use `mix guardian.gen.secret` to get one"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
