@@ -30,4 +30,12 @@ defmodule StonexWeb.ErrorHelpers do
       Gettext.dgettext(StonexWeb.Gettext, "errors", msg, opts)
     end
   end
+
+  @doc """
+  Receives a changeset as argument and get each error
+  to be translated into string by gettext
+  """
+  def translate_errors(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
+  end
 end
