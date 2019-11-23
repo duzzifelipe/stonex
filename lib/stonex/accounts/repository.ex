@@ -200,7 +200,7 @@ defmodule Stonex.Accounts.Repository do
       ...> history = Stonex.Accounts.Repository.list_account_history(
       ...>   account, :all
       ...> )
-      ...> Enum.count(history) == 1 && Enum.at(history, 0).amount === 100_000
+      ...> Enum.count(history.items) == 1 && Enum.at(history.items, 0).amount === 100_000
       true
   """
   @spec list_account_history(Stonex.Accounts.Account.t(), atom()) ::
