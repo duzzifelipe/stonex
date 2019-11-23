@@ -30,6 +30,7 @@ defmodule Stonex.AuthenticationControllerTest do
                  "last_name" => _,
                  "registration_id" => _
                },
+               "auth" => _,
                "account" => %{
                  "id" => _,
                  "agency" => _,
@@ -49,6 +50,7 @@ defmodule Stonex.AuthenticationControllerTest do
 
       assert %{
                "account" => nil,
+               "auth" => nil,
                "error" => %{"account" => "invalid agency number", "user" => nil},
                "user" => nil
              } = response
@@ -67,6 +69,7 @@ defmodule Stonex.AuthenticationControllerTest do
 
       %{
         "account" => nil,
+        "auth" => nil,
         "error" => %{
           "account" => nil,
           "user" => %{"registration_id" => ["has already been taken"]}
@@ -91,6 +94,7 @@ defmodule Stonex.AuthenticationControllerTest do
 
       assert %{
                "error" => nil,
+               "auth" => _,
                "user" => %{
                  "email" => _,
                  "first_name" => _,
@@ -108,7 +112,7 @@ defmodule Stonex.AuthenticationControllerTest do
         |> post("/api/login", @valid_user_data)
         |> json_response(400)
 
-      assert %{"error" => "invalid user and password", "user" => nil} = response
+      assert %{"error" => "invalid user and password", "auth" => nil, "user" => nil} = response
     end
   end
 end
