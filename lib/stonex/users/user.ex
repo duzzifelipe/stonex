@@ -9,6 +9,15 @@ defmodule Stonex.Users.User do
 
   @type t :: %__MODULE__{}
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :first_name,
+             :last_name,
+             :registration_id,
+             :email
+           ]}
+
   use Ecto.Schema
   import Ecto.Changeset
 
