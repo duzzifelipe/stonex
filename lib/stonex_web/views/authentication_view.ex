@@ -3,11 +3,11 @@ defmodule StonexWeb.AuthenticationView do
 
   alias StonexWeb.ErrorHelpers
 
-  def render("data.json", %{user: user, account: account, error: nil}) do
+  def render("signup.json", %{user: user, account: account, error: nil}) do
     %{user: user, account: account, error: nil}
   end
 
-  def render("data.json", %{user: nil, account: nil, error: %{user: error_1, account: error_2}}) do
+  def render("signup.json", %{user: nil, account: nil, error: %{user: error_1, account: error_2}}) do
     error_1 = parse_error(error_1)
     error_2 = parse_error(error_2)
     %{user: nil, account: nil, error: %{user: error_1, account: error_2}}

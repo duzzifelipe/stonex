@@ -28,12 +28,12 @@ defmodule StonexWeb.AuthenticationController do
     case Repository.signup_with_account(params, agency) do
       {:ok, {user, account}} ->
         conn
-        |> render("data.json", %{user: user, account: account, error: nil})
+        |> render("signup.json", %{user: user, account: account, error: nil})
 
       {:error, {error_1, error_2}} ->
         conn
         |> put_status(400)
-        |> render("data.json", %{
+        |> render("signup.json", %{
           user: nil,
           account: nil,
           error: %{user: error_1, account: error_2}
