@@ -7,5 +7,7 @@ defmodule StonexWeb.Router do
 
   scope "/api", StonexWeb do
     pipe_through :api
+
+    post "/signup", AuthenticationController, :signup
   end
 end
