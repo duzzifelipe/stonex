@@ -84,6 +84,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
+      account = Map.put(account, :user, user)
       assert {:ok, account_updated} = Accounts.Repository.withdraw_money(account, 90_000)
       assert account_updated.balance == 10_000
 
@@ -103,6 +104,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
+      account = Map.put(account, :user, user)
       assert {:error, errors} = Accounts.Repository.withdraw_money(account, 200_000)
       assert Keyword.keys(errors) == [:balance]
       error = Keyword.fetch!(errors, :balance)
@@ -113,7 +115,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
-      new_account = %{account | id: account.id + 1}
+      new_account = %{account | id: account.id + 1, user: user}
 
       assert_raise(Ecto.StaleEntryError, fn ->
         Accounts.Repository.withdraw_money(new_account, 90_000)
@@ -127,6 +129,8 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
       assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      account_1 = Map.put(account_1, :user, user)
 
       assert {:ok, {new_1, new_2}} =
                Accounts.Repository.transfer_money(account_1, account_2, 90_000)
@@ -159,6 +163,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
       assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
 
+      account_1 = Map.put(account_1, :user, user)
+
       assert {:error, {chnst_1, chnst_2}} =
                Accounts.Repository.transfer_money(account_1, account_2, 120_000)
 
@@ -171,6 +177,8 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
       assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+
+      account_1 = Map.put(account_1, :user, user)
 
       assert {:error, {chnst_1, chnst_2}} =
                Accounts.Repository.transfer_money(account_1, account_2, -20_000)
@@ -221,6 +229,7 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
+      account = Map.put(account, :user, user)
       assert {:ok, account_updated} = Accounts.Repository.withdraw_money(account, 60_000)
       assert {:error, _} = Accounts.Repository.withdraw_money(account_updated, 41_000)
 
@@ -246,12 +255,16 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
+      account = Map.put(account, :user, user)
+
       # this is a little bit strange:
       # since account was created without mock (today)
       # the transaction is made with mock (two days ago)
       # but since there is no validation for it
       # it helps testing the list_account_history's filter
-      with_mock NaiveDateTime, utc_now: fn -> one_day_ago end do
+      with_mocks [
+        {NaiveDateTime, [], [utc_now: fn -> one_day_ago end, to_iso8601: fn _ -> today end]}
+      ] do
         assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
       end
 
@@ -269,7 +282,11 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
-      with_mock NaiveDateTime, utc_now: fn -> one_month_ago end do
+      account = Map.put(account, :user, user)
+
+      with_mocks [
+        {NaiveDateTime, [], [utc_now: fn -> one_month_ago end, to_iso8601: fn _ -> today end]}
+      ] do
         assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
       end
 
@@ -287,7 +304,11 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
-      with_mock NaiveDateTime, utc_now: fn -> one_year_ago end do
+      account = Map.put(account, :user, user)
+
+      with_mocks [
+        {NaiveDateTime, [], [utc_now: fn -> one_year_ago end, to_iso8601: fn _ -> today end]}
+      ] do
         assert {:ok, _} = Accounts.Repository.withdraw_money(account, 60_000)
       end
 

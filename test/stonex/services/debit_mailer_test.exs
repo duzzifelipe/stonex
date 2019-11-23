@@ -26,7 +26,7 @@ defmodule Stonex.Services.DebitMailerTest do
       now = NaiveDateTime.utc_now()
       date_now = NaiveDateTime.to_iso8601(now)
 
-      with_mocks([{NaiveDateTime, [], [to_iso8601: fn(_) -> date_now end, utc_now: fn() -> now end]}]) do
+      with_mocks([{NaiveDateTime, [], [to_iso8601: fn _ -> date_now end, utc_now: fn -> now end]}]) do
         # there is no transaction, but it simulates
         message = Stonex.Services.DebitMailer.send_debit_email(user, account, 100_000)
 
