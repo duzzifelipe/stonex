@@ -1,4 +1,9 @@
 defmodule StonexWeb.GuardianErrorHandler do
+  @moduledoc """
+  When there is an error with guardian plug authentication,
+  this module builds the error message to be presented
+  """
+
   import Plug.Conn
 
   @behaviour Guardian.Plug.ErrorHandler
