@@ -13,7 +13,8 @@ defmodule Stonex.Users.RepositoryTest do
       registration_id: to_string(CPF.generate()),
       email: Faker.Internet.email(),
       password: @pwd,
-      password_confirmation: @pwd
+      password_confirmation: @pwd,
+      agency: Faker.Util.pick(1..99)
     }
 
     test "with valid data" do
@@ -55,6 +56,41 @@ defmodule Stonex.Users.RepositoryTest do
     end
   end
 
+  describe "users repository signup_with_account/2" do
+    test "with valid data" do
+      agency = Faker.Util.pick(1..99)
+
+      assert {:ok, {user, account}} = Repository.signup_with_account(@valid_parameters, agency)
+
+      assert user.first_name == @valid_parameters.first_name
+      assert user.last_name == @valid_parameters.last_name
+      assert user.registration_id == @valid_parameters.registration_id
+      assert user.email == @valid_parameters.email
+      assert User.password_valid?(user, @pwd)
+
+      # should create an account for this user
+      assert account.agency == agency
+      assert account.user_id == user.id
+    end
+
+    test "with error in user" do
+      assert {:ok, user} = Repository.signup(@valid_parameters)
+
+      assert {:error, {changeset, nil}} = Repository.signup_with_account(@valid_parameters, 1)
+
+      assert !changeset.valid?
+      assert Keyword.keys(changeset.errors) == [:registration_id]
+      error = Keyword.fetch!(changeset.errors, :registration_id)
+      assert elem(error, 0) == "has already been taken"
+    end
+
+    test "with error in agency" do
+      assert {:error, {nil, error}} = Repository.signup_with_account(@valid_parameters, "abc")
+
+      assert error == "invalid agency number"
+    end
+  end
+
   describe "users repository login/2" do
     test "with valid attributes" do
       assert {:ok, registered_user} = Repository.signup(@valid_parameters)
@@ -86,6 +122,20 @@ defmodule Stonex.Users.RepositoryTest do
 
       assert {:error, "invalid user and password"} =
                Repository.login(Faker.Internet.email(), @pwd)
+    end
+  end
+
+  describe "users repository find_user_by_email/1" do
+    test "with existent email" do
+      assert {:ok, registered_user} = Repository.signup(@valid_parameters)
+      user = Repository.find_user_by_email(registered_user.email)
+
+      assert user.email == registered_user.email
+    end
+
+    test "with invalid email" do
+      user = Repository.find_user_by_email(Faker.Internet.email())
+      assert user == nil
     end
   end
 end

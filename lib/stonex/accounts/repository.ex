@@ -44,8 +44,8 @@ defmodule Stonex.Accounts.Repository do
       ...> assert account.agency == 1
       true
   """
-
-  @spec create_account(User.t(), pos_integer()) :: Account.t()
+  @spec create_account(User.t(), pos_integer()) ::
+          {:ok, Account.t()} | {:error, Ecto.Changeset.t()}
   def create_account(%User{id: user_id}, agency) when is_number(agency) do
     number = get_next_account_number(agency)
 
@@ -67,6 +67,8 @@ defmodule Stonex.Accounts.Repository do
         error
     end
   end
+
+  def create_account(_, _), do: {:error, "invalid agency number"}
 
   @doc """
   Receives an account struct where amount

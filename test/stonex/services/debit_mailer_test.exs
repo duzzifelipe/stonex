@@ -14,7 +14,8 @@ defmodule Stonex.Services.DebitMailerTest do
           last_name: "Duzzi",
           password: "sT0n3TEST",
           password_confirmation: "sT0n3TEST",
-          registration_id: "397.257.568-86"
+          registration_id: to_string(CPF.generate()),
+          agency: Faker.Util.pick(1..99)
         })
 
       {:ok, account} =
