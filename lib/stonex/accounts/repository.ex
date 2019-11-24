@@ -104,18 +104,14 @@ defmodule Stonex.Accounts.Repository do
   def withdraw_money(%Account{user: %User{} = user} = account, amount) do
     changeset = Account.update_balance_changeset(account, :debit, amount)
 
-    if changeset.valid? do
-      case Repo.update(changeset) do
-        {:ok, updated} ->
-          register_transaction_history(updated, "debit", amount)
-          DebitMailer.send_debit_email(user, account, amount)
-          {:ok, updated}
+    case Repo.update(changeset) do
+      {:ok, updated} ->
+        register_transaction_history(updated, "debit", amount)
+        DebitMailer.send_debit_email(user, account, amount)
+        {:ok, updated}
 
-        error ->
-          error
-      end
-    else
-      {:error, changeset.errors}
+      {:error, changeset} ->
+        {:error, changeset.errors}
     end
   end
 
