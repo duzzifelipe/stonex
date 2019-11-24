@@ -343,4 +343,49 @@ defmodule Stonex.Accounts.RepositoryTest do
       end)
     end
   end
+
+  describe "accounts repository account_by_user/2" do
+    test "with existent user and account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      assert %Accounts.Account{} = acc = Accounts.Repository.account_by_user(user, account.id)
+
+      assert account.id == acc.id
+      assert account.user_id == user.id
+    end
+
+    test "with unexistent user" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+
+      params =
+        @valid_user_parameters
+        |> Map.put(:email, Faker.Internet.email())
+        |> Map.put(:registration_id, to_string(CPF.generate()))
+
+      assert {:ok, user_2} = Users.Repository.signup(params)
+      assert nil == Accounts.Repository.account_by_user(user_2, account.id)
+    end
+
+    test "with unexistent account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert nil == Accounts.Repository.account_by_user(user, 1)
+    end
+  end
+
+  describe "accounts repository account_by_id/2" do
+    test "with existent account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+      assert %Accounts.Account{} = acc = Accounts.Repository.account_by_id(account.id)
+
+      assert account.id == acc.id
+      assert account.user_id == user.id
+    end
+
+    test "with unexistent account" do
+      assert nil == Accounts.Repository.account_by_id(1)
+    end
+  end
 end
