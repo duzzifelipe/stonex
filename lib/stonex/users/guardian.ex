@@ -15,7 +15,13 @@ defmodule Stonex.Users.Guardian do
 
   def resource_from_claims(claims) do
     email = claims["sub"]
-    resource = Repository.find_user_by_email(email)
-    {:ok, resource}
+
+    case Repository.find_user_by_email(email) do
+      %User{} = resource ->
+        {:ok, resource}
+
+      _ ->
+        {:error, "not found"}
+    end
   end
 end
