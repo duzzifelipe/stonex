@@ -225,6 +225,59 @@ defmodule Stonex.Accounts.Repository do
     |> put_history_accumulators()
   end
 
+  @doc """
+  Given a user object, finds an account
+  that is related to this user, in order
+  to validate ownership
+
+  ## Examples
+
+      iex> {:ok, user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account} = Stonex.Accounts.Repository.create_account(
+      ...>   user, 1
+      ...> )
+      ...> acc = Stonex.Accounts.Repository.account_by_user(user, account.id)
+      ...> acc.id == account.id
+      true
+  """
+  @spec account_by_user(User.t(), pos_integer()) :: Account.t() | nil
+  def account_by_user(%User{id: user_id}, account_id) do
+    from(a in Account, where: a.user_id == ^user_id and a.id == ^account_id)
+    |> Repo.one()
+  end
+
+  @doc """
+  Given an account id, retrieve the account from database
+
+  ## Examples
+
+      iex> {:ok, user} = Stonex.Users.Repository.signup(%{
+      ...>   email: "duzzifelipe@gmail.com",
+      ...>   first_name: "Felipe",
+      ...>   last_name: "Duzzi",
+      ...>   password: "sT0n3TEST",
+      ...>   password_confirmation: "sT0n3TEST",
+      ...>   registration_id: "397.257.568-86"
+      ...> })
+      ...> {:ok, account} = Stonex.Accounts.Repository.create_account(
+      ...>   user, 1
+      ...> )
+      ...> acc = Stonex.Accounts.Repository.account_by_id(account.id)
+      ...> acc.id == account.id
+      true
+  """
+  @spec account_by_id(pos_integer) :: Account.t() | nil
+  def account_by_id(account_id) do
+    Repo.get(Account, account_id)
+  end
+
   defp get_next_account_number(agency) do
     last_account = get_one_account_by_digit(agency)
 
