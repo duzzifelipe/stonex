@@ -126,11 +126,12 @@ defmodule Stonex.Users.User do
   defp format_registration_id(%{valid?: false} = changeset, _), do: changeset
 
   defp format_registration_id(%{valid?: true} = changeset, field) do
-    if input = get_change(changeset, field) do
-      string_id = input |> CPF.parse!() |> to_string()
-      put_change(changeset, field, string_id)
-    else
+    string_id =
       changeset
-    end
+      |> get_change(field)
+      |> CPF.parse!()
+      |> to_string()
+
+    put_change(changeset, field, string_id)
   end
 end
