@@ -5,6 +5,7 @@
     "lib/stonex_web.ex",
     "lib/stonex_web/router.ex",
     "lib/stonex_web/views/error_helpers.ex",
+    "lib/stonex_web/guardian_error_handler.ex",
     "test/support/"
   ]
 }
