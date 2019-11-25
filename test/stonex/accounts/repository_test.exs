@@ -111,9 +111,9 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:ok, account} = Accounts.Repository.create_account(user, 1)
 
       account = Map.put(account, :user, user)
-      assert {:error, errors} = Accounts.Repository.withdraw_money(account, 200_000)
-      assert Keyword.keys(errors) == [:balance]
-      error = Keyword.fetch!(errors, :balance)
+      assert {:error, changeset} = Accounts.Repository.withdraw_money(account, 200_000)
+      assert Keyword.keys(changeset.errors) == [:balance]
+      error = Keyword.fetch!(changeset.errors, :balance)
       assert elem(error, 0) == "provided value is not valid"
     end
 

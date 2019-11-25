@@ -111,7 +111,7 @@ defmodule Stonex.Accounts.Repository do
         {:ok, updated}
 
       {:error, changeset} ->
-        {:error, changeset.errors}
+        {:error, changeset}
     end
   end
 
