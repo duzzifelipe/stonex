@@ -27,6 +27,10 @@ defmodule StonexWeb.Router do
       get "/:account_id/history", HistoryController, :index
 
       post "/:account_id/transactions/withdraw", TransactionController, :withdraw
+
+      post "/:account_id/transactions/transfer/:credit_account_id",
+           TransactionController,
+           :transfer
     end
   end
 end

@@ -150,7 +150,8 @@ defmodule Stonex.Accounts.Repository do
       [99800, 100200]
   """
   @spec transfer_money(Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t(), pos_integer()) ::
-          {:ok, Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()} | {:error, any(), any()}
+          {:ok, {Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()}}
+          | {:error, {any(), any()}}
   def transfer_money(%Account{user: user} = account_debit, %Account{} = account_credit, amount) do
     changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
     changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
@@ -168,7 +169,7 @@ defmodule Stonex.Accounts.Repository do
         {new_debit, new_credit}
       end)
     else
-      {:error, {changeset_debit.errors, changeset_credit.errors}}
+      {:error, {changeset_debit, changeset_credit}}
     end
   end
 

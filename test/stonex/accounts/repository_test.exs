@@ -180,8 +180,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:error, {chnst_1, chnst_2}} =
                Accounts.Repository.transfer_money(account_1, account_2, 120_000)
 
-      assert chnst_1 == [balance: {"provided value is not valid", []}]
-      assert chnst_2 == []
+      assert chnst_1.errors == [balance: {"provided value is not valid", []}]
+      assert chnst_2.errors == []
     end
 
     test "with invalid amount" do
@@ -195,8 +195,8 @@ defmodule Stonex.Accounts.RepositoryTest do
       assert {:error, {chnst_1, chnst_2}} =
                Accounts.Repository.transfer_money(account_1, account_2, -20_000)
 
-      assert chnst_1 == [balance: {"provided value is not valid", []}]
-      assert chnst_2 == [balance: {"provided value is not valid", []}]
+      assert chnst_1.errors == [balance: {"provided value is not valid", []}]
+      assert chnst_2.errors == [balance: {"provided value is not valid", []}]
     end
 
     test "with nonexistent debit account" do
