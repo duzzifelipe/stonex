@@ -25,6 +25,8 @@ defmodule StonexWeb.Router do
       pipe_through :with_auth
 
       get "/:account_id/history", HistoryController, :index
+
+      post "/:account_id/transactions/withdraw", TransactionController, :withdraw
     end
   end
 end
