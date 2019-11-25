@@ -38,4 +38,18 @@ defmodule StonexWeb.ErrorHelpers do
   def translate_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
   end
+
+  @doc """
+  Receives any error format and parses
+  changeset if is of type changeset
+  """
+  def parse_error(error) do
+    case error do
+      %Ecto.Changeset{} ->
+        translate_errors(error)
+
+      _ ->
+        error
+    end
+  end
 end
