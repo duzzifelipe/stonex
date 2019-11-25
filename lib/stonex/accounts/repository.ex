@@ -245,7 +245,7 @@ defmodule Stonex.Accounts.Repository do
   """
   @spec account_by_user(User.t(), pos_integer()) :: Account.t() | nil
   def account_by_user(%User{id: user_id}, account_id) do
-    from(a in Account, where: a.user_id == ^user_id and a.id == ^account_id)
+    from(a in Account, where: a.user_id == ^user_id and a.id == ^account_id, preload: [:user])
     |> Repo.one()
   end
 
