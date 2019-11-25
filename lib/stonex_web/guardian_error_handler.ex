@@ -10,7 +10,10 @@ defmodule StonexWeb.GuardianErrorHandler do
 
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, {type, _reason}, _opts) do
-    body = Jason.encode!(%{message: to_string(type)})
-    send_resp(conn, 401, body)
+    body = Jason.encode!(%{error: to_string(type)})
+
+    conn
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(401, body)
   end
 end

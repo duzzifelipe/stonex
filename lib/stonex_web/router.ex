@@ -23,6 +23,8 @@ defmodule StonexWeb.Router do
 
     scope "/accounts", Accounts do
       pipe_through :with_auth
+
+      get "/:account_id/history", HistoryController, :index
     end
   end
 end

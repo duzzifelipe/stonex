@@ -10,6 +10,12 @@ defmodule Stonex.Accounts.AccountHistory do
 
   @type t :: %__MODULE__{}
 
+  @derive {Jason.Encoder,
+           only: [
+             :type,
+             :amount
+           ]}
+
   alias Stonex.Accounts.Account
 
   use Ecto.Schema
