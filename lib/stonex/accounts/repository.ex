@@ -153,23 +153,28 @@ defmodule Stonex.Accounts.Repository do
           {:ok, {Stonex.Accounts.Account.t(), Stonex.Accounts.Account.t()}}
           | {:error, {any(), any()}}
   def transfer_money(%Account{user: user} = account_debit, %Account{} = account_credit, amount) do
-    changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
-    changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
+    if account_debit.id != account_credit.id do
+      changeset_debit = Account.update_balance_changeset(account_debit, :debit, amount)
+      changeset_credit = Account.update_balance_changeset(account_credit, :credit, amount)
 
-    if changeset_debit.valid? && changeset_credit.valid? do
-      Repo.transaction(fn ->
-        new_debit = Repo.update!(changeset_debit)
-        new_credit = Repo.update!(changeset_credit)
+      if changeset_debit.valid? && changeset_credit.valid? do
+        Repo.transaction(fn ->
+          new_debit = Repo.update!(changeset_debit)
+          new_credit = Repo.update!(changeset_credit)
 
-        register_transaction_history(new_debit, "debit", amount)
-        register_transaction_history(new_credit, "credit", amount)
+          register_transaction_history(new_debit, "debit", amount)
+          register_transaction_history(new_credit, "credit", amount)
 
-        DebitMailer.send_debit_email(user, account_debit, amount)
+          DebitMailer.send_debit_email(user, account_debit, amount)
 
-        {new_debit, new_credit}
-      end)
+          {new_debit, new_credit}
+        end)
+      else
+        {:error, {changeset_debit, changeset_credit}}
+      end
     else
-      {:error, {changeset_debit, changeset_credit}}
+      msg = "accounts must be different"
+      {:error, {msg, msg}}
     end
   end
 
