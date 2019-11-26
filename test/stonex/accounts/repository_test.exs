@@ -234,6 +234,18 @@ defmodule Stonex.Accounts.RepositoryTest do
       new_1 = Repo.get!(Accounts.Account, account_1.id)
       assert new_1.balance == 100_000
     end
+
+    test "with same debit and credit account" do
+      assert {:ok, user} = Users.Repository.signup(@valid_user_parameters)
+      assert {:ok, account} = Accounts.Repository.create_account(user, 1)
+      account = Map.put(account, :user, user)
+
+      assert {:error, {msg_1, msg_2}} =
+               Accounts.Repository.transfer_money(account, account, 90_000)
+
+      assert msg_1 == "accounts must be different"
+      assert msg_2 == "accounts must be different"
+    end
   end
 
   describe "accounts repository list_account_history/2" do
