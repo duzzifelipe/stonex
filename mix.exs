@@ -53,7 +53,8 @@ defmodule Stonex.MixProject do
       {:excoveralls, "~> 0.12", only: :test},
       {:mock, "~> 0.3.0", only: :test},
       {:money, "~> 1.6"},
-      {:guardian, "~> 2.0"}
+      {:guardian, "~> 2.0"},
+      {:cors_plug, "~> 2.0"}
     ]
   end
 

@@ -1,6 +1,8 @@
 defmodule StonexWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :stonex
 
+  plug CORSPlug
+
   socket "/socket", StonexWeb.UserSocket,
     websocket: true,
     longpoll: false
