@@ -137,3 +137,163 @@ After writing the workflows and running a lot of times, here are the conclusions
 For checking tests coverage, the library `excoveralls` is used. It can be called by running `mix coveralls` (results on console) and `mix coveralls.html` to generate a html page holding results and code points in `./cover/excoveralls.html`.
 
 Some files were ignored from testing, like phoenix-generated functions and test support functions. The are listed in `coveralls.json`, inside the key `skip_files`.
+
+
+## How to use the API
+
+Here are the examples for calling the API, using the server hosted at http://35.239.20.107/ (http only, since for production it would use a https load balancer pointing to internal http).
+
+Only signup and login doesn't require a Bearer token. All transactions requires it and verifies if an account belongs to the authenticated user.
+
+All examples simulate success actions. For errors, the changeset errors are cast to JSON and presented to the user inside the `error` key.
+
+Debit operations alerts are printed to console using `Logger`.
+
+- ### Create an user and account:
+  ```
+  curl -X POST \
+  http://35.239.20.107/api/signup \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+    "first_name": "Felipe",
+    "last_name": "Duzzi",
+    "email": "duzzifelipe@gmail.com",
+    "registration_id": "397.257.568-86",
+    "password": "St0n3!PWD",
+    "password_confirmation": "St0n3!PWD"
+  }'
+  ```
+
+  The expected return is:
+  > Auth is the token to be used on authenticated routes
+  ```
+  {
+    "account": {
+        "id": 2,
+        "agency": 1,
+        "number": 1,
+        "balance": 100000
+    },
+    "auth": "JWT-TOKEN-HERE",
+    "error": null,
+    "user": {
+        "id": 4,
+        "first_name": "Felipe",
+        "last_name": "Duzzi",
+        "registration_id": "39725756886",
+        "email": "duzzifelipe@gmail.com"
+    }
+  }
+  ```
+- ### Login to an account:
+  ```
+  curl -X POST \
+  http://35.239.20.107/api/login \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+    "email": "duzzifelipe@gmail.com",
+    "password": "St0n3!PWD"
+  }'
+  ```
+
+  And the response, also including `auth` token:
+  ```
+  {
+    "auth": "JWT-TOKEN-HERE",
+    "error": null,
+    "user": {
+        "id": 4,
+        "first_name": "Felipe",
+        "last_name": "Duzzi",
+        "registration_id": "39725756886",
+        "email": "duzzifelipe@gmail.com"
+    }
+  }
+  ```
+
+- ### Account withdraw
+  ```
+  curl -X POST \
+  http://35.239.20.107/api/accounts/2/transactions/withdraw \
+  -H 'Authorization: Bearer JWT-TOKEN-HERE' \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+	"amount": 23000
+  }'
+  ```
+
+  Returns:
+  ```
+  "account": {
+      "id": 2,
+      "agency": 1,
+      "number": 1,
+      "balance": 77000
+  },
+  "error": false
+  }
+  ```
+
+- ### Transfers between accounts
+  > Must have two users/accounts for testing, since cannot transfer to the same account
+  ```
+  curl -X POST \
+  http://35.239.20.107/api/accounts/2/transactions/transfer/3 \
+  -H 'Authorization: Bearer JWT-TOKEN-HERE' \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+	"amount": 20000
+  }'
+  ```
+
+  Returns:
+  ```
+  {
+    "credit_account": {
+        "id": 3,
+        "agency": 1,
+        "number": 2,
+        "balance": 120000
+    },
+    "debit_account": {
+        "id": 2,
+        "agency": 1,
+        "number": 1,
+        "balance": 77000
+    },
+    "error": {
+        "credit": null,
+        "debit": null
+    }
+  }
+  ```
+
+- ### Retrieving an account history:
+  ```
+  curl -X GET \
+  http://35.239.20.107/api/accounts/2/history \
+  -H 'Authorization: Bearer JWT-TOKEN-HERE' \
+  -H 'cache-control: no-cache'
+  ```
+
+  Returns (for an account without transactions, only the first one):
+  ```
+  {
+    "error": false,
+    "history": {
+        "items": [
+            {
+                "type": "credit",
+                "amount": 100000
+            }
+        ],
+        "total_credit": 100000,
+        "total_debit": 0
+    }
+  }
+  ```
+
