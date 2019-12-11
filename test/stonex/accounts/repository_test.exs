@@ -62,6 +62,7 @@ defmodule Stonex.Accounts.RepositoryTest do
 
       assert {:ok, account_1} = Accounts.Repository.create_account(user, 1)
       assert {:ok, account_2} = Accounts.Repository.create_account(user, 1)
+      assert {:ok, _account_3} = Accounts.Repository.create_account(user, 1)
 
       # creating same agency, account number won't be equal
       assert account_1.agency == 1

@@ -281,17 +281,17 @@ defmodule Stonex.Accounts.Repository do
   end
 
   defp get_next_account_number(agency) do
-    last_account = get_one_account_by_digit(agency)
+    last_account_id = get_one_account_by_digit(agency)
 
-    if is_nil(last_account) do
+    if is_nil(last_account_id) do
       1
     else
-      last_account.number + 1
+      last_account_id + 1
     end
   end
 
   defp get_one_account_by_digit(agency) do
-    from(a in Account, where: a.agency == ^agency, order_by: [desc: :number])
+    from(a in Account, where: a.agency == ^agency, select: max(a.number))
     |> Repo.one()
   end
 
